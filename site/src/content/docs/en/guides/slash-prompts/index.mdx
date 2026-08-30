@@ -48,11 +48,11 @@ Back in the chat input box, type `/` to open the Prompt list.
 
 You can keep typing keywords to filter, then press Enter on a selection, or just click an item.
 
-The Prompt is attached as a small `/name` chip above the input box rather than pasted in as text, so a long template doesn't bury the message you're actually writing. Type your own request next to it and send — or send with just the chip, and the Prompt itself becomes the request.
+Rather than pasting the body in, Cebian leaves a short `/name` at the start of your text, so a long template doesn't bury the message you're actually writing. Type your own request after it and send — or send with just the `/name`, and the Prompt itself becomes the request.
 
-Click the × on the chip to detach it. **Double-click the chip** to expand the Prompt back into the input box as plain text, if you'd rather edit it before sending.
+It behaves as one unit: put the caret on it and press Backspace (or Delete) to remove the whole thing at once. Once it's gone, the message no longer carries the Prompt.
 
-In the conversation, the message shows the same `/name` chip; click it to see the exact Prompt content that was sent.
+In the conversation, the sent message shows a `/name` tag; click it to see the exact Prompt content that was sent.
 
 ## Template variables
 
@@ -92,7 +92,6 @@ You generally don't need to open this path manually; just edit them under "Setti
 <QA>
 <QAItem q="I typed / but don't see a list. What now?">First create a Prompt under "Settings → Prompts".</QAItem>
 <QAItem q="The Prompt doesn't send automatically after I select it?">That's normal. Cebian only attaches it to the message; you can add your own request first, then send manually.</QAItem>
-<QAItem q="I want to edit the Prompt before sending, like before.">Double-click the chip and its content expands back into the input box as ordinary text.</QAItem>
 <QAItem q="What if a page variable is empty?">The current page may not allow reading, or you haven't selected any text.</QAItem>
 <QAItem q="My Prompt is too long to maintain. What now?">Split it into several shorter templates and add the specific requirements when you use them.</QAItem>
 </QA>

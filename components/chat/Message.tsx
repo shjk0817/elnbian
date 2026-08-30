@@ -1,4 +1,4 @@
-import { Bot, ChevronDown, ChevronLeft, ChevronRight, Lightbulb, CheckCircle, Crosshair, FileText, Film, FoldVertical, Pencil, ShieldAlert, SquareSlash } from 'lucide-react';
+import { Bot, ChevronDown, ChevronLeft, ChevronRight, Lightbulb, CheckCircle, Crosshair, FileText, Film, FoldVertical, Pencil, ShieldAlert } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -151,26 +151,22 @@ export function UserMessageBubble({
   // 充当这条消息的全部内容。
   const hasBubble = typeof bubble === 'string' ? bubble.length > 0 : bubble != null;
 
+  // 气泡上方那枚 `/名字` 标签：点开看本轮实际发出的提示词正文。它是发送后的回执，
+  // 输入框里那截 `/名字` 则是发送前会被剥掉的纯文本——两者不必也不该共用一套样式。
   return (
     <div className="self-end max-w-[95%] group/user">
       {slashPrompt && (
         <div className="flex flex-col items-end mb-1.5">
-          <Badge
-            asChild
-            variant="outline"
-            className="text-[0.65rem] font-mono gap-1 h-5 rounded pl-1 pr-1.5 text-sky-400 border-sky-400/20 bg-sky-400/5 hover:bg-sky-400/10"
+          <button
+            type="button"
+            aria-expanded={promptOpen}
+            title={t('chat.message.slashPromptToggle')}
+            onClick={() => setPromptOpen((v) => !v)}
+            className="inline-flex max-w-full items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[0.78rem] leading-snug text-primary hover:bg-primary/15"
           >
-            <button
-              type="button"
-              aria-expanded={promptOpen}
-              title={t('chat.message.slashPromptToggle')}
-              onClick={() => setPromptOpen((v) => !v)}
-            >
-              <SquareSlash className="size-2.5 shrink-0" />
-              <span className="truncate max-w-40">/{slashPrompt.name}</span>
-              <ChevronDown className={`size-2.5 shrink-0 transition-transform ${promptOpen ? 'rotate-180' : ''}`} />
-            </button>
-          </Badge>
+            <span className="min-w-0 truncate">/{slashPrompt.name}</span>
+            <ChevronDown className={`size-2.5 shrink-0 transition-transform ${promptOpen ? 'rotate-180' : ''}`} />
+          </button>
           {promptOpen && (
             <div className="mt-1 max-h-60 overflow-y-auto rounded-lg border border-border bg-muted/40 px-3 py-2 text-[0.75rem] leading-relaxed whitespace-pre-wrap break-all text-muted-foreground">
               {slashPrompt.body}

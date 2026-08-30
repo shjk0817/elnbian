@@ -497,8 +497,6 @@ chat:
     needModel: "請先選擇一個 AI 模型"
     goToSettings: "前往設定"
     readPromptFailed: "讀取 Prompt 失敗"
-    slashPromptHint: "按兩下展開為文字"
-    slashPromptRemove: "移除提示詞"
     elementAdded: "此元素已新增"
     elementPickFailed: "元素選擇失敗"
     elementPickUnsupported: "當前頁面不支援元素選取"

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback, useImperativeHandle, forwardRef, type KeyboardEvent } from 'react';
-import { Send, Square, MousePointer2, Camera, Paperclip, Smartphone, Crosshair, FileText, X, FileType, Film, SquareSlash } from 'lucide-react';
+import { Send, Square, MousePointer2, Camera, Paperclip, Smartphone, Crosshair, FileText, X, FileType, Film } from 'lucide-react';
 import { showDialog } from '@/lib/ui/dialog';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import { startElementPicker, cancelElementPicker } from '@/lib/browser/element-p
 import { scanPrompts, type PromptMeta } from '@/lib/ai-config/scanner';
 import { replaceTemplateVars } from '@/lib/ai-config/template';
 import { gatherTemplateVars } from '@/lib/ai-config/template-vars-sidepanel';
-import type { SlashPrompt } from '@/lib/ai-config/slash-prompt';
+import { isSlashQuery, splitSlashToken, type SlashPrompt } from '@/lib/ai-config/slash-prompt';
 import { vfs } from '@/lib/persistence/vfs';
 import { parseFrontmatter } from '@/lib/content/frontmatter';
 import { CEBIAN_PROMPTS_DIR } from '@/lib/persistence/vfs-paths';
@@ -74,8 +74,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 ) {
   const [value, setValue] = useState('');
   const [showSlash, setShowSlash] = useState(false);
-  // 本轮挂着的斜杠提示词。选中 `/x` 不再把正文倒进输入框，而是挂成一个块——正文在
-  // 发送时自成信封里的一段，用户气泡里也就只剩用户自己敲的字（issue #53）。
+  // 本轮挂着的斜杠提示词。选中 `/x` 不再把正文倒进输入框，只在输入框开头留下 `/name`
+  // 这截文本，正文在发送时自成信封里的一段，用户气泡里也就只剩用户自己敲的字（issue #53）。
+  // 是否真的生效以输入框里那截文本为准，一律走 `splitSlashToken` 判定。
   const [slashPrompt, setSlashPrompt] = useState<SlashPrompt | null>(null);
   // 选中一条提示词要 await 读 VFS + 采集模板变量（页面脚本注入、剪贴板），期间用户可能
   // 已经切了会话、又点了另一条，或者干脆已经把消息发出去了。这三处都自增，选中落定前
@@ -320,8 +321,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [isPicking]);
 
-  // 只挂了提示词、一个字没打也算可发——提示词本身就是这一轮的请求。
-  const canSend = value.trim().length > 0 || slashPrompt !== null;
+  // 挂着的提示词以 `/name` 的形态就待在 value 里，所以只看文本即可：只挂提示词、
+  // 一个字没打，value 里也还有那截 token，照样可发。
+  const canSend = value.trim().length > 0;
 
   // Recorder integration. The captured session lands in attachments via
   // the channel subscription below — NOT via `recorder.stop()`'s return
@@ -387,7 +389,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 
     // Snapshot the text BEFORE any await so a fast follow-up edit doesn't
     // leak into the outgoing message.
-    const text = outgoingText.trim();
+    // 开头那截 `/name` 是这一轮携带的指令、不是用户说的话，发送时剥掉；它已被改动
+    // 或删掉的话 `active` 就是 undefined，这一轮不带提示词。
+    const { body, active: outgoingPrompt } = splitSlashToken(outgoingText, slashPrompt);
+    const text = body.trim();
     const dispatchSessionId = sessionIdRef.current;
 
     isDispatchingRef.current = true;
@@ -415,7 +420,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       if (sessionIdRef.current !== dispatchSessionId) return;
 
       const outgoing = attachmentsRef.current;
-      const result = await onSend(text, outgoing.length > 0 ? outgoing : undefined, dispatchSessionId, slashPrompt ?? undefined);
+      const result = await onSend(text, outgoing.length > 0 ? outgoing : undefined, dispatchSessionId, outgoingPrompt);
       if (result.status !== 'dispatched') return;
       if (sessionIdRef.current !== dispatchSessionId) return;
 
@@ -473,6 +478,29 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       if (e.key === 'Escape') {
         e.preventDefault();
         setShowSlash(false);
+        return;
+      }
+    }
+
+    // 开头那截 `/name` 语义上是一条不可分割的指令，不是一串能逐字啃掉的普通字符：
+    // 光标落在它身上按 Backspace / Delete 就整块删掉，并解除本轮挂载。有选区时不拦，
+    // 交给浏览器按「删掉选中这片文字」的常规语义处理。
+    if ((e.key === 'Backspace' || e.key === 'Delete') && slashToken.active) {
+      const ta = textareaRef.current;
+      const caret = ta?.selectionStart ?? 0;
+      const inToken = e.key === 'Backspace'
+        ? caret > 0 && caret <= slashToken.end
+        : caret < slashToken.end;
+      if (ta && ta.selectionStart === ta.selectionEnd && inToken) {
+        e.preventDefault();
+        // 连带吃掉 token 与正文之间那一个分隔空格（换行留着，那是用户自己敲的换行）。
+        const rest = value.slice(slashToken.end).replace(/^[ \t]/, '');
+        setValue(rest);
+        setSlashPrompt(null);
+        slashPromptSeqRef.current++;
+        // 删掉 token 后剩下的可能又是一截 `/xxx`（`/a /b` 删掉前者），照常开菜单。
+        setShowSlash(isSlashQuery(rest, null));
+        requestAnimationFrame(() => textareaRef.current?.setSelectionRange(0, 0));
         return;
       }
     }
@@ -548,17 +576,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 
   const handleInput = (val: string) => {
     setValue(val);
-    setShowSlash(val.startsWith('/'));
+    // 菜单只在用户还在打筛选词时开着：开头那截已经是挂上的 token，说明这一轮在写正文，
+    // 不该再把菜单弹出来挡着（判据见 `isSlashQuery`）。
+    setShowSlash(isSlashQuery(val, slashPrompt));
     // Manual edits exit history mode — the new content becomes the draft.
     if (historyIndex !== null) setHistoryIndex(null);
   };
 
-  // 由外部（欢迎页示例卡片）填入文本并聚焦，不夺走输入框对 value 的所有权。
-  const fill = useCallback((text: string) => {
-    setValue(text);
-    setShowSlash(text.startsWith('/'));
-    setHistoryIndex(null);
-    // 等 value 提交后再聚焦并把光标移到末尾，方便用户接着改。
+  /** 聚焦输入框并把光标移到末尾。value 是受控的，得等这一次提交渲染完再设光标。 */
+  const focusCaretAtEnd = useCallback(() => {
     requestAnimationFrame(() => {
       const el = textareaRef.current;
       if (!el) return;
@@ -567,6 +593,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     });
   }, []);
 
+  // 由外部（欢迎页示例卡片）填入文本并聚焦，不夺走输入框对 value 的所有权。
+  const fill = useCallback((text: string) => {
+    setValue(text);
+    // 外部填入的是完整一段文本，等于整体替换输入框内容——原来挂着的提示词随之作废。
+    setSlashPrompt(null);
+    slashPromptSeqRef.current++;
+    setShowSlash(isSlashQuery(text, null));
+    setHistoryIndex(null);
+    // 等 value 提交后再聚焦并把光标移到末尾，方便用户接着改。
+    focusCaretAtEnd();
+  }, [focusCaretAtEnd]);
+
   useImperativeHandle(ref, () => ({ fill }), [fill]);
 
   // Scan prompts when slash menu opens
@@ -574,6 +612,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     if (!showSlash) return;
     scanPrompts().then(setPrompts).catch(() => setPrompts([]));
   }, [showSlash]);
+
+  // 挂着的 token 在输入框里的当前状态。`end` 是 `/name` 的长度，整块删除时按它切。
+  const slashToken = useMemo(() => splitSlashToken(value, slashPrompt), [value, slashPrompt]);
 
   // Filter prompts by typed search (after '/')
   const slashFilter = value.startsWith('/') ? value.slice(1).toLowerCase() : '';
@@ -627,25 +668,22 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       const { body } = parseFrontmatter(content);
       const vars = await gatherTemplateVars();
       // 模板变量在**选中的这一刻**展开：挂上去的正文就是最终会发出去的文本，
-      // 双击展开看到的即所见即所发。
+      // 已发送气泡上展开给用户看的也是它，所见即所发。
       const replaced = replaceTemplateVars(body.trim(), vars);
       if (!stillCurrent()) return;
       setSlashPrompt({ name: prompt.name, body: replaced });
-      setValue((v) => (v === queryAtSelect ? '' : v));
+      // 把开头那截用来筛选的 `/xxx` 原地换成 `/name `：它就是输入框里的一段普通文本，
+      // 字号行高与其余文字一致，不占额外一行、不撑高输入框。等待期间用户接着打的字
+      // 留在 token 后面，不覆盖。
+      setValue((v) => {
+        const rest = (v === queryAtSelect ? '' : v.replace(/^\/\S*/, '')).replace(/^[ \t]+/, '');
+        return rest ? `/${prompt.name} ${rest}` : `/${prompt.name} `;
+      });
       setShowSlash(false);
-      textareaRef.current?.focus();
+      focusCaretAtEnd();
     } catch {
       if (stillCurrent()) toast.error(t('chat.composer.readPromptFailed'));
     }
-  };
-
-  /** 双击 chip：把正文倒回输入框，回到「填充后自己改」的老工作流。已经打过的字
-   *  留在正文之后，不覆盖。 */
-  const expandSlashPrompt = () => {
-    if (!slashPrompt || isDispatchingRef.current) return;
-    setValue((v) => (v.trim() ? `${slashPrompt.body}\n\n${v}` : slashPrompt.body));
-    setSlashPrompt(null);
-    textareaRef.current?.focus();
   };
 
   const handlePickElement = async () => {
@@ -957,35 +995,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
             <Smartphone className="size-3.5" />
           </Button>
 
-          {(attachments.length > 0 || slashPrompt) && (
+          {attachments.length > 0 && (
             <>
               <Separator orientation="vertical" className="h-4! mx-1 bg-border" />
 
-              {/* Slash prompt chip + attachment chips */}
+              {/* Attachment chips */}
               <div className="flex gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none items-center">
-                {slashPrompt && (
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 text-[0.65rem] font-mono gap-1 h-5 rounded pl-1 pr-0.5 text-sky-400 border-sky-400/20 bg-sky-400/5"
-                    title={t('chat.composer.slashPromptHint')}
-                  >
-                    <button
-                      className="flex items-center gap-1 cursor-pointer"
-                      onDoubleClick={expandSlashPrompt}
-                    >
-                      <SquareSlash className="size-2.5 shrink-0" />
-                      <span className="truncate max-w-40">/{slashPrompt.name}</span>
-                    </button>
-                    <button
-                      className="opacity-60 hover:opacity-100 p-0.5 rounded-sm hover:bg-foreground/10 cursor-pointer"
-                      disabled={isDispatching}
-                      aria-label={t('chat.composer.slashPromptRemove')}
-                      onClick={() => setSlashPrompt(null)}
-                    >
-                      <X className="size-2.5" />
-                    </button>
-                  </Badge>
-                )}
                 {attachments.map((att, i) => (
                   att.type === 'image' ? (
                     // Image attachment: thumbnail + label badge

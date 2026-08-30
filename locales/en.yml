@@ -501,8 +501,6 @@ chat:
     needModel: "Please select an AI model first"
     goToSettings: "Go to settings"
     readPromptFailed: "Failed to read prompt"
-    slashPromptHint: "Double-click to expand into text"
-    slashPromptRemove: "Remove prompt"
     elementAdded: "Element already added"
     elementPickFailed: "Failed to pick element"
     elementPickUnsupported: "Element picker isn't supported on this page"
