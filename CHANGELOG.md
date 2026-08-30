@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 变更 / Changed
+
+- 模型选择器现在会明确标出已不可用的模型（被提供商下架、自定义模型被删、或该提供商的凭据已移除），并在发送前就提示重新选择，而不是等请求发出去才失败。对话输入框与设置页里的模型选择器都适用 ([#62](https://github.com/maotoumao/Cebian/issues/62))
+
+- The model picker now clearly flags a model that is no longer available (removed by the provider, deleted from a custom provider, or left without credentials) and asks you to pick another one before sending, instead of failing once the request goes out. This applies to the composer and to the model pickers in Settings ([#62](https://github.com/maotoumao/Cebian/issues/62))
+
+### 修复 / Fixed
+
+- 会话所用的模型被提供商移除后，切回该会话并改用其它仍然可用的模型，发送时仍报 `No model selected or model not found` 且这一轮消息不会被保存；现在会正确采用你当下选择的模型。同一问题还会让这类旧会话无法重试、编辑消息和切换分支，一并修复 ([#62](https://github.com/maotoumao/Cebian/issues/62))
+
+- After a provider dropped the model a chat was using, switching that chat to another still-available model and sending kept failing with `No model selected or model not found`, and the message was lost. The model you pick now takes effect. The same problem also broke retry, message editing and branch switching on those chats; all are fixed ([#62](https://github.com/maotoumao/Cebian/issues/62))
+
 ## 1.5.1 - 2026-08-22
 
 ### 新增 / Added

@@ -853,6 +853,7 @@ errors:
   pagePattern:
     invalid: "Not a valid match pattern."
     duplicate: "This pattern is already in the list."
+  modelUnavailable: "The selected model is no longer available. Pick another one."
   pageActionGone: "This action no longer exists."
   pageActionSaveFailed: "Could not save the action."
   oauth:

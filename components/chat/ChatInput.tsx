@@ -14,6 +14,7 @@ import { useStorageItem } from '@/hooks/useStorageItem';
 import { providerCredentials, customProviders as customProvidersStorage, type ThinkingLevel, type ModelIdentity } from '@/lib/persistence/storage';
 import { getSupportedThinkingLevels, clampThinkingLevel } from '@earendil-works/pi-ai';
 import { resolveModel } from '@/lib/providers/resolve-model';
+import { isUsableModel } from '@/lib/providers/usable-models';
 import { startElementPicker, cancelElementPicker } from '@/lib/browser/element-picker';
 import { scanPrompts, type PromptMeta } from '@/lib/ai-config/scanner';
 import { replaceTemplateVars } from '@/lib/ai-config/template';
@@ -100,6 +101,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   // 支持哪些思考档 等能力派生共用这一次解析，避免多份内联解析各自漂移
   const resolvedModel = useMemo(
     () => (currentModel ? resolveModel(currentModel, providers, customProviderList) : null),
+    [currentModel, providers, customProviderList],
+  );
+
+  // 选中的模型是否还选得出来。`resolveModel` 不看凭据（凭据被删也照样解析成功），因此
+  // 不能拿它当门禁——发送前的拦截与 ModelSelector 的失效标记共用 `isUsableModel`
+  // 这一个判据（issue #62）。
+  const modelUsable = useMemo(
+    () => !!currentModel && isUsableModel(currentModel, providers, customProviderList),
     [currentModel, providers, customProviderList],
   );
 
@@ -349,8 +358,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   const handleSend = async () => {
     if (!canSend) return;
     if (isDispatchingRef.current) return;
-    if (!currentModel) {
-      toast.error(t('chat.composer.needModel'), {
+    // 没选模型 → 引导去选；选了但已失效（下架 / 凭据被删）→ 说明原因并让用户重选。
+    // 在这里拦住，用户输入的文案就还留在输入框里，不会因为后台 throw 而白打一遍。
+    if (!currentModel || !modelUsable) {
+      toast.error(currentModel ? t('errors.modelUnavailable') : t('chat.composer.needModel'), {
         action: onOpenSettings ? { label: t('chat.composer.goToSettings'), onClick: onOpenSettings } : undefined,
       });
       return;

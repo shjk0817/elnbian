@@ -841,6 +841,7 @@ errors:
   pagePattern:
     invalid: "页面匹配规则格式错误。"
     duplicate: "该规则已存在。"
+  modelUnavailable: "所选模型已不可用，请重新选择。"
   pageActionGone: "找不到该操作。"
   pageActionSaveFailed: "保存失败，请重试。"
   oauth:
