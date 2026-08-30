@@ -151,7 +151,7 @@ const chatClientHandlers: ClientHandlerMap = {
     sessionManager.prompt(sessionId, msg.text, msg.attachments, {
       model: msg.model,
       thinkingLevel: msg.thinkingLevel,
-    }).catch((err) => {
+    }, msg.slashPrompt).catch((err) => {
       post(port, {
         type: 'error',
         sessionId,

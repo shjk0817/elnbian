@@ -28,8 +28,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### 变更 / Changed
 
+- 用 `/` 选中一条提示词后，不再把整段正文粘进输入框，而是以一枚 `/名字` 小标签挂在输入框上方——再长的模板也不会把你正要写的话淹掉。可以在旁边接着写自己的要求再发送，也可以只挂着标签直接发（此时提示词本身就是这一轮的请求）。点 × 摘掉，双击标签则把正文展开回输入框，方便发送前先改。对话里的消息同样带着这枚标签，点开可查看本次实际发出的提示词内容 ([#53](https://github.com/maotoumao/Cebian/issues/53))
 - 模型选择器现在会明确标出已不可用的模型（被提供商下架、自定义模型被删、或该提供商的凭据已移除），并在发送前就提示重新选择，而不是等请求发出去才失败。对话输入框与设置页里的模型选择器都适用 ([#62](https://github.com/maotoumao/Cebian/issues/62))
 
+- Picking a prompt with `/` no longer pastes the whole body into the input box. It attaches as a small `/name` chip above the composer instead, so a long template can't bury the message you're actually writing. Type your own request next to it and send, or send with just the chip and the prompt becomes the request. Click × to detach it, or double-click the chip to expand the body back into the input box if you'd rather edit it first. The sent message carries the same chip — click it to see exactly what was sent ([#53](https://github.com/maotoumao/Cebian/issues/53))
 - The model picker now clearly flags a model that is no longer available (removed by the provider, deleted from a custom provider, or left without credentials) and asks you to pick another one before sending, instead of failing once the request goes out. This applies to the composer and to the model pickers in Settings ([#62](https://github.com/maotoumao/Cebian/issues/62))
 
 ### 修复 / Fixed

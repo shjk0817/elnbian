@@ -12,6 +12,8 @@ import {
   type TurnSettings,
 } from '@/lib/ipc/protocol';
 import type { Attachment } from '@/lib/agent/attachments';
+import { buildSlashPromptBlock, type SlashPrompt } from '@/lib/ai-config/slash-prompt';
+import { wrapUserRequest } from '@/lib/agent/prompt-envelope';
 import { applyStreamOps } from '@/lib/agent/stream-replica';
 import type { PermissionRequest } from '@/lib/agent/tool-permissions';
 import { replaceUserText, truncateForRetry } from '@/lib/agent/message-helpers';
@@ -433,6 +435,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
     attachments: Attachment[] | undefined,
     expectedSessionId: string | null,
     turn?: TurnSettings,
+    slashPrompt?: SlashPrompt,
   ): boolean => {
     if (sessionIdRef.current !== expectedSessionId) return false;
 
@@ -443,7 +446,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
     const sessionId = existingSessionId ?? crypto.randomUUID();
 
     try {
-      port.postMessage({ type: 'prompt', sessionId, text, attachments, model: turn?.model, thinkingLevel: turn?.thinkingLevel });
+      port.postMessage({ type: 'prompt', sessionId, text, attachments, slashPrompt, model: turn?.model, thinkingLevel: turn?.thinkingLevel });
     } catch {
       if (portRef.current === port) {
         portRef.current = null;
@@ -463,7 +466,17 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
 
     // Optimistically add user message to local state for immediate UI feedback
     setState(prev => {
-      const content: any[] = [{ type: 'text' as const, text: text.trim() }];
+      // 乐观消息按后台那套信封的形状拼，与广播回来的真消息逐字节同形——两者解析结果
+      // 一致，切换时不会跳变。
+      //
+      // 请求块**无条件**包：不包的话这条消息是「裸文本」，用户自己打的字里若出现字面量
+      // `<user-request>`，乐观态与广播态会解析出不同的结果。提示词块则在挂了 chip 时带上，
+      // 否则只挂 chip、没打字的那一轮会渲染成彻底空白（没气泡也没 chip），像消息发丢了。
+      const request = wrapUserRequest(text.trim());
+      const optimisticText = slashPrompt
+        ? `${buildSlashPromptBlock(slashPrompt)}\n\n${request}`
+        : request;
+      const content: any[] = [{ type: 'text' as const, text: optimisticText }];
       // Include image attachments in optimistic message for preview
       if (attachments) {
         for (const att of attachments) {
@@ -489,12 +502,14 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
     attachments?: Attachment[],
     expectedSessionId: string | null = sessionIdRef.current,
     turn?: TurnSettings,
+    slashPrompt?: SlashPrompt,
   ): Promise<PromptDispatchResult> => {
     const trimmed = text.trim();
-    if (!trimmed) return { status: 'notDispatched', reason: 'empty' };
+    // 挂了斜杠提示词时空文本也算有内容——提示词本身就是这一轮的请求（issue #53）。
+    if (!trimmed && !slashPrompt) return { status: 'notDispatched', reason: 'empty' };
 
     const startedSessionId = expectedSessionId;
-    if (dispatchPrompt(trimmed, attachments, startedSessionId, turn)) return { status: 'dispatched' };
+    if (dispatchPrompt(trimmed, attachments, startedSessionId, turn, slashPrompt)) return { status: 'dispatched' };
 
     const connected = await waitForConnected(PROMPT_RECONNECT_TIMEOUT_MS);
     if (!connected || sessionIdRef.current !== startedSessionId) {
@@ -504,7 +519,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
       return { status: 'notDispatched', reason: 'unavailable' };
     }
 
-    if (dispatchPrompt(trimmed, attachments, startedSessionId, turn)) return { status: 'dispatched' };
+    if (dispatchPrompt(trimmed, attachments, startedSessionId, turn, slashPrompt)) return { status: 'dispatched' };
 
     setState(prev => ({ ...prev, lastError: t('chat.session.notConnected') }));
     return { status: 'notDispatched', reason: 'unavailable' };

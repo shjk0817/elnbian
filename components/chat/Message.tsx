@@ -1,4 +1,4 @@
-import { Bot, ChevronLeft, ChevronRight, Lightbulb, CheckCircle, Crosshair, FileText, Film, FoldVertical, Pencil, ShieldAlert } from 'lucide-react';
+import { Bot, ChevronDown, ChevronLeft, ChevronRight, Lightbulb, CheckCircle, Crosshair, FileText, Film, FoldVertical, Pencil, ShieldAlert, SquareSlash } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { CopyButton } from '@/components/common/CopyButton';
 import { MarkdownRenderer } from '@/components/common/MarkdownRenderer';
 import { MessageMetaRow, type MessageMetaProps } from '@/components/chat/MessageMetaRow';
-import { extractUserText, extractUserAttachments } from '@/lib/agent/message-helpers';
+import { extractUserText, extractUserAttachments, extractSlashPrompt } from '@/lib/agent/message-helpers';
 import { showDialog } from '@/lib/ui/dialog';
 import { RECORDING_MIME } from '@/lib/agent/attachments';
 import { t } from '@/lib/i18n';
@@ -81,6 +81,8 @@ export function UserMessageBubble({
   branch?: BranchSwitcherProps;
 }) {
   const text = msg ? extractUserText(msg) : null;
+  const slashPrompt = useMemo(() => msg ? extractSlashPrompt(msg) : null, [msg]);
+  const [promptOpen, setPromptOpen] = useState(false);
   const attachments = useMemo(() => msg ? extractUserAttachments(msg) : null, [msg]);
   const hasAttachments = attachments && (attachments.images.length > 0 || attachments.elements.length > 0 || attachments.files.length > 0 || attachments.recordings.length > 0);
 
@@ -144,11 +146,44 @@ export function UserMessageBubble({
     );
   }
 
+  const bubble = text ?? children;
+  // 只挂提示词、没打字的那一轮 text 是空串——此时别渲染一个空气泡框，让提示词块自己
+  // 充当这条消息的全部内容。
+  const hasBubble = typeof bubble === 'string' ? bubble.length > 0 : bubble != null;
+
   return (
     <div className="self-end max-w-[95%] group/user">
-      <div className="bg-card border border-border px-4 py-3 rounded-2xl text-[0.9rem] leading-relaxed w-fit ml-auto whitespace-pre-wrap break-all">
-        {text ?? children}
-      </div>
+      {slashPrompt && (
+        <div className="flex flex-col items-end mb-1.5">
+          <Badge
+            asChild
+            variant="outline"
+            className="text-[0.65rem] font-mono gap-1 h-5 rounded pl-1 pr-1.5 text-sky-400 border-sky-400/20 bg-sky-400/5 hover:bg-sky-400/10"
+          >
+            <button
+              type="button"
+              aria-expanded={promptOpen}
+              title={t('chat.message.slashPromptToggle')}
+              onClick={() => setPromptOpen((v) => !v)}
+            >
+              <SquareSlash className="size-2.5 shrink-0" />
+              <span className="truncate max-w-40">/{slashPrompt.name}</span>
+              <ChevronDown className={`size-2.5 shrink-0 transition-transform ${promptOpen ? 'rotate-180' : ''}`} />
+            </button>
+          </Badge>
+          {promptOpen && (
+            <div className="mt-1 max-h-60 overflow-y-auto rounded-lg border border-border bg-muted/40 px-3 py-2 text-[0.75rem] leading-relaxed whitespace-pre-wrap break-all text-muted-foreground">
+              {slashPrompt.body}
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasBubble && (
+        <div className="bg-card border border-border px-4 py-3 rounded-2xl text-[0.9rem] leading-relaxed w-fit ml-auto whitespace-pre-wrap break-all">
+          {bubble}
+        </div>
+      )}
 
       {hasAttachments && (
         <div className="flex gap-1.5 flex-wrap items-center justify-end mt-1.5 px-1">
@@ -210,7 +245,8 @@ export function UserMessageBubble({
       {text != null && (
         <div className="flex h-8 items-center justify-end gap-1.5 px-1">
           <div className="flex items-center gap-1 opacity-0 pointer-events-none transition-opacity group-hover/user:opacity-100 group-hover/user:pointer-events-auto group-focus-within/user:opacity-100 group-focus-within/user:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
-            <CopyButton text={text} />
+            {/* chip-only turn has no text to copy — editing it to add text is still fine */}
+            {hasBubble && <CopyButton text={text ?? ''} />}
             {onEdit && (
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback, useImperativeHandle, forwardRef, type KeyboardEvent } from 'react';
-import { Send, Square, MousePointer2, Camera, Paperclip, Smartphone, Crosshair, FileText, X, FileType, Film } from 'lucide-react';
+import { Send, Square, MousePointer2, Camera, Paperclip, Smartphone, Crosshair, FileText, X, FileType, Film, SquareSlash } from 'lucide-react';
 import { showDialog } from '@/lib/ui/dialog';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { startElementPicker, cancelElementPicker } from '@/lib/browser/element-p
 import { scanPrompts, type PromptMeta } from '@/lib/ai-config/scanner';
 import { replaceTemplateVars } from '@/lib/ai-config/template';
 import { gatherTemplateVars } from '@/lib/ai-config/template-vars-sidepanel';
+import type { SlashPrompt } from '@/lib/ai-config/slash-prompt';
 import { vfs } from '@/lib/persistence/vfs';
 import { parseFrontmatter } from '@/lib/content/frontmatter';
 import { CEBIAN_PROMPTS_DIR } from '@/lib/persistence/vfs-paths';
@@ -44,6 +45,7 @@ interface ChatInputProps {
     message: string,
     attachments: Attachment[] | undefined,
     expectedSessionId: string | null,
+    slashPrompt: SlashPrompt | undefined,
   ) => Promise<PromptDispatchResult>;
   onOpenSettings?: () => void;
   isAgentRunning?: boolean;
@@ -72,6 +74,13 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 ) {
   const [value, setValue] = useState('');
   const [showSlash, setShowSlash] = useState(false);
+  // 本轮挂着的斜杠提示词。选中 `/x` 不再把正文倒进输入框，而是挂成一个块——正文在
+  // 发送时自成信封里的一段，用户气泡里也就只剩用户自己敲的字（issue #53）。
+  const [slashPrompt, setSlashPrompt] = useState<SlashPrompt | null>(null);
+  // 选中一条提示词要 await 读 VFS + 采集模板变量（页面脚本注入、剪贴板），期间用户可能
+  // 已经切了会话、又点了另一条，或者干脆已经把消息发出去了。这三处都自增，选中落定前
+  // 比对世代号，过期的结果直接丢弃。
+  const slashPromptSeqRef = useRef(0);
   const [prompts, setPrompts] = useState<PromptMeta[]>([]);
   const [selectedPromptIndex, setSelectedPromptIndex] = useState(0);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -311,7 +320,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [isPicking]);
 
-  const canSend = value.trim().length > 0;
+  // 只挂了提示词、一个字没打也算可发——提示词本身就是这一轮的请求。
+  const canSend = value.trim().length > 0 || slashPrompt !== null;
 
   // Recorder integration. The captured session lands in attachments via
   // the channel subscription below — NOT via `recorder.stop()`'s return
@@ -382,6 +392,11 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 
     isDispatchingRef.current = true;
     setIsDispatching(true);
+    // 作废在途的提示词选中。只靠 stillCurrent() 里那个 isDispatchingRef 快照不够：
+    // 一整轮发送完全可能在选中的 await 窗口内起止（gatherTemplateVars 要注入页面脚本、
+    // 读剪贴板，比一次纯文本发送慢得多），等选中落定时该标志已经变回 false，那条被
+    // 放弃的提示词就会重新挂上，抹掉用户已经在写的下一条消息并抢走焦点。
+    slashPromptSeqRef.current++;
 
     try {
       if (recorder.isOwner) {
@@ -400,13 +415,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       if (sessionIdRef.current !== dispatchSessionId) return;
 
       const outgoing = attachmentsRef.current;
-      const result = await onSend(text, outgoing.length > 0 ? outgoing : undefined, dispatchSessionId);
+      const result = await onSend(text, outgoing.length > 0 ? outgoing : undefined, dispatchSessionId, slashPrompt ?? undefined);
       if (result.status !== 'dispatched') return;
       if (sessionIdRef.current !== dispatchSessionId) return;
 
       setValue('');
       setAttachments([]);
       attachmentsRef.current = [];
+      setSlashPrompt(null);
       setShowSlash(false);
       setHistoryIndex(null);
       setDraft('');
@@ -423,6 +439,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   useEffect(() => {
     setHistoryIndex(null);
     setDraft('');
+    setSlashPrompt(null);
+    slashPromptSeqRef.current++;
     interimSuffixRef.current = '';
     speech.stop();
   }, [sessionId, speech.stop]);
@@ -593,19 +611,41 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   // Handle prompt selection from slash menu
   const handlePromptSelect = async (prompt: PromptMeta) => {
     if (isDispatchingRef.current) return;
+    const seq = ++slashPromptSeqRef.current;
+    const selectedSessionId = sessionIdRef.current;
+    // 选中那一刻输入框里的内容（就是用来筛选的 `/xxx`）。落定时只有它一字未改才清空，
+    // 否则会把用户在等待期间敲进去的话抹掉。
+    const queryAtSelect = value;
+    // 结果落定时仍是同一个会话、且没有更晚的选中把它顶掉，才允许写入。
+    const stillCurrent = () =>
+      !isDispatchingRef.current
+      && slashPromptSeqRef.current === seq
+      && sessionIdRef.current === selectedSessionId;
     try {
       const raw = await vfs.readFile(`${CEBIAN_PROMPTS_DIR}/${prompt.fileName}`, 'utf8');
       const content = typeof raw === 'string' ? raw : new TextDecoder().decode(raw as Uint8Array);
       const { body } = parseFrontmatter(content);
       const vars = await gatherTemplateVars();
+      // 模板变量在**选中的这一刻**展开：挂上去的正文就是最终会发出去的文本，
+      // 双击展开看到的即所见即所发。
       const replaced = replaceTemplateVars(body.trim(), vars);
-      if (isDispatchingRef.current) return;
-      setValue(replaced);
+      if (!stillCurrent()) return;
+      setSlashPrompt({ name: prompt.name, body: replaced });
+      setValue((v) => (v === queryAtSelect ? '' : v));
       setShowSlash(false);
       textareaRef.current?.focus();
     } catch {
-      toast.error(t('chat.composer.readPromptFailed'));
+      if (stillCurrent()) toast.error(t('chat.composer.readPromptFailed'));
     }
+  };
+
+  /** 双击 chip：把正文倒回输入框，回到「填充后自己改」的老工作流。已经打过的字
+   *  留在正文之后，不覆盖。 */
+  const expandSlashPrompt = () => {
+    if (!slashPrompt || isDispatchingRef.current) return;
+    setValue((v) => (v.trim() ? `${slashPrompt.body}\n\n${v}` : slashPrompt.body));
+    setSlashPrompt(null);
+    textareaRef.current?.focus();
   };
 
   const handlePickElement = async () => {
@@ -917,12 +957,35 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
             <Smartphone className="size-3.5" />
           </Button>
 
-          {attachments.length > 0 && (
+          {(attachments.length > 0 || slashPrompt) && (
             <>
               <Separator orientation="vertical" className="h-4! mx-1 bg-border" />
 
-              {/* Attachment chips */}
+              {/* Slash prompt chip + attachment chips */}
               <div className="flex gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none items-center">
+                {slashPrompt && (
+                  <Badge
+                    variant="outline"
+                    className="shrink-0 text-[0.65rem] font-mono gap-1 h-5 rounded pl-1 pr-0.5 text-sky-400 border-sky-400/20 bg-sky-400/5"
+                    title={t('chat.composer.slashPromptHint')}
+                  >
+                    <button
+                      className="flex items-center gap-1 cursor-pointer"
+                      onDoubleClick={expandSlashPrompt}
+                    >
+                      <SquareSlash className="size-2.5 shrink-0" />
+                      <span className="truncate max-w-40">/{slashPrompt.name}</span>
+                    </button>
+                    <button
+                      className="opacity-60 hover:opacity-100 p-0.5 rounded-sm hover:bg-foreground/10 cursor-pointer"
+                      disabled={isDispatching}
+                      aria-label={t('chat.composer.slashPromptRemove')}
+                      onClick={() => setSlashPrompt(null)}
+                    >
+                      <X className="size-2.5" />
+                    </button>
+                  </Badge>
+                )}
                 {attachments.map((att, i) => (
                   att.type === 'image' ? (
                     // Image attachment: thumbnail + label badge

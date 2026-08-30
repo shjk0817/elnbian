@@ -497,6 +497,8 @@ chat:
     needModel: "請先選擇一個 AI 模型"
     goToSettings: "前往設定"
     readPromptFailed: "讀取 Prompt 失敗"
+    slashPromptHint: "按兩下展開為文字"
+    slashPromptRemove: "移除提示詞"
     elementAdded: "此元素已新增"
     elementPickFailed: "元素選擇失敗"
     elementPickUnsupported: "當前頁面不支援元素選取"
@@ -621,6 +623,7 @@ chat:
     tokensInBreakdownHitWrite: "未快取 $1 · 快取 $2 · 寫快取 $3"
     # 最新一輪 assistant 訊息左下角重試按鈕的 tooltip / aria-label
     retry: "重試"
+    slashPromptToggle: "檢視提示詞內容"
     # 編輯已傳送 user 訊息時的提示（issue #44）
     editHint: "將從這裡重新產生回覆"
     # 存在並列版本的訊息上「‹ n/m ›」分支切換器的 tooltip

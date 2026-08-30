@@ -20,6 +20,7 @@ import type { AgentMessage } from '@earendil-works/pi-agent-core';
 import type { SessionPlacement, SessionRecord } from '@/lib/persistence/db';
 import type { ModelIdentity, ThinkingLevel } from '@/lib/persistence/storage';
 import type { Attachment } from '@/lib/agent/attachments';
+import type { SlashPrompt } from '@/lib/ai-config/slash-prompt';
 import type { RecordedSession } from '@/lib/recorder/types';
 import type { MCPResourceContents } from '@/lib/mcp/client';
 import type { PermissionRequest } from '@/lib/agent/tool-permissions';
@@ -59,7 +60,16 @@ export type ClientMessage =
    *  模型 / 思考档」，由发起的 sidepanel 随消息携带（而非后台读全局），属于该会话的
    *  选择。新会话据此建行；已有会话据此就地刷新活 agent 并落库到会话行（会话行是真相）。
    *  缺省时后台回退到全局 lastSelectedModel 充当「新对话默认种子」（向后兼容）。 */
-  | ({ type: 'prompt'; sessionId: string | null; text: string; attachments?: Attachment[] } & TurnSettings)
+  | ({
+      type: 'prompt';
+      sessionId: string | null;
+      text: string;
+      attachments?: Attachment[];
+      /** 本轮携带的斜杠提示词（`/` 菜单选中的模板，模板变量已在页面侧展开）。正文由
+       *  UI 传而非后台按名字回读文件：模板变量要 chrome.tabs / scripting / 剪贴板，
+       *  是侧边栏专有能力，后台引不得（见 lib/ai-config/template-vars-sidepanel.ts）。 */
+      slashPrompt?: SlashPrompt;
+    } & TurnSettings)
   | { type: 'cancel'; sessionId: string }
   /** Re-run the last user turn for `sessionId`. The background drops any
    *  trailing assistant / toolResult messages (typically a failed turn or

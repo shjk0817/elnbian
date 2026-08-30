@@ -501,6 +501,8 @@ chat:
     needModel: "Please select an AI model first"
     goToSettings: "Go to settings"
     readPromptFailed: "Failed to read prompt"
+    slashPromptHint: "Double-click to expand into text"
+    slashPromptRemove: "Remove prompt"
     elementAdded: "Element already added"
     elementPickFailed: "Failed to pick element"
     elementPickUnsupported: "Element picker isn't supported on this page"
@@ -629,6 +631,7 @@ chat:
     tokensInBreakdownHitWrite: "uncached $1 · cached $2 · write $3"
     # Tooltip/aria-label for the retry button on the latest assistant turn.
     retry: "Retry"
+    slashPromptToggle: "Show prompt content"
     # Hint shown while editing a sent user message (issue #44).
     editHint: "Regenerates the response from here"
     # Branch switcher ("‹ n/m ›") tooltips on messages with sibling versions.

@@ -23,6 +23,7 @@ import type { Api, AssistantMessage, Message, Model } from '@earendil-works/pi-a
 import { clampThinkingLevel } from '@earendil-works/pi-ai';
 import { createCebianAgent } from '../agent/factory';
 import { composeUserMessage, composeSystemPrompt } from '../agent/prompt-composer';
+import type { SlashPrompt } from '@/lib/ai-config/slash-prompt';
 import { resolveProviderApiKey } from '../providers/credentials';
 import {
   COMPACTION_SETTINGS,
@@ -836,12 +837,16 @@ class SessionManager {
    *
    *  `turn` 是页面随本条消息携带的「本次发送所用的模型 / 思考档」——属于该会话
    *  的选择。新会话据它建行；已有会话据它就地刷新活 agent 并落库到会话行（会话
-   *  行是真相）。缺省时回退全局 lastSelectedModel 充当「新对话默认种子」（向后兼容）。 */
+   *  行是真相）。缺省时回退全局 lastSelectedModel 充当「新对话默认种子」（向后兼容）。
+   *
+   *  `slashPrompt` 是本轮携带的斜杠提示词，在 user 消息信封里自成一块，不与用户
+   *  自己敲的话混在一起（见 lib/ai-config/slash-prompt.ts）。 */
   async prompt(
     sessionId: string,
     text: string,
     attachments: Attachment[] = [],
     turn?: TurnSettings,
+    slashPrompt?: SlashPrompt,
   ): Promise<void> {
     // Persist + broadcast 'session_created' for brand-new sessions BEFORE any
     // agent setup work (model resolve, tool factory, MCP, createAgent — easily
@@ -968,7 +973,7 @@ class SessionManager {
     // 本轮记忆开关的单一快照：同时喂给 user 消息注入与 system prompt 刷新，
     // 保证一轮内两处读同一个值（原子门控，避免读到两个快照而前后不一致）。
     const memoryEnabled = (await memorySettings.getValue()).enabled;
-    const enriched = await composeUserMessage(text, attachments, memoryEnabled);
+    const enriched = await composeUserMessage(text, attachments, memoryEnabled, slashPrompt);
 
     const images = extractImages(attachments);
 
