@@ -8,7 +8,6 @@ import {
   type BroadcastMessage,
   type ClientMessage,
   type ServerMessage,
-  type SessionMeta,
   type SessionSnapshot,
   type TurnSettings,
 } from '@/lib/ipc/protocol';
@@ -20,6 +19,7 @@ import type { Message } from '@earendil-works/pi-ai';
 import { t } from '@/lib/i18n';
 import { recorderChannel } from '@/lib/recorder/sidepanel-channel';
 import { mcpAppResourceChannel } from '@/lib/mcp/sidepanel-channel';
+import { sessionListChannel } from '@/lib/agent/session-list-channel';
 import { myInstanceId } from '@/lib/ipc/instance-id';
 
 // ─── State ───
@@ -66,8 +66,6 @@ export interface AgentPortCallbacks {
    *  会话行）。这里把该会话的 provider / model / 思考档单独回传，供上层回填本地的
    *  turn 草稿——与 `onSessionLoaded` 对齐，修复「发消息后进设置再返回模型被重置」。 */
   onSessionSettings?: (provider: string, model: string, thinkingLevel: string) => void;
-  onSessionList?: (sessions: SessionMeta[]) => void;
-  onSessionDeleted?: (sessionId: string) => void;
 }
 
 // ─── Hook ───
@@ -263,11 +261,15 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
           break;
 
         case 'session_list_result':
-          callbacksRef.current.onSessionList?.(msg.sessions);
+          sessionListChannel.publishList(msg.sessions);
           break;
 
         case 'session_deleted':
-          callbacksRef.current.onSessionDeleted?.(msg.sessionId);
+          sessionListChannel.publishDeleted(msg.sessionId);
+          break;
+
+        case 'session_list_error':
+          sessionListChannel.publishError(msg.error);
           break;
 
         case 'error':
@@ -349,6 +351,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
           portRef.current = null;
           recorderChannel.setPort(null);
           mcpAppResourceChannel.setPort(null);
+          sessionListChannel.setPort(null);
           setState(prev => ({ ...prev, connected: false }));
         }
         scheduleRetry();
@@ -368,6 +371,10 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
         if (sessionToRestore) {
           port.postMessage({ type: 'subscribe', sessionId: sessionToRestore } satisfies ClientMessage);
         }
+        // 会话列表通道：交出端口后 HistoryPanel 才能拉列表 / 删除，不必自己开端口。
+        // 必须放在 hello 之后——它是三个 channel 里唯一会在 setPort 时同步发消息的
+        // （断线重连且面板正开着时会补拉一次列表），先挂上就会抢在 hello 前面。
+        sessionListChannel.setPort(port);
       } catch {
         handleDisconnect();
       }
@@ -386,6 +393,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
       portRef.current = null;
       recorderChannel.setPort(null);
       mcpAppResourceChannel.setPort(null);
+      sessionListChannel.setPort(null);
     };
   }, []);
 
@@ -433,6 +441,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
         portRef.current = null;
         recorderChannel.setPort(null);
         mcpAppResourceChannel.setPort(null);
+        sessionListChannel.setPort(null);
         setState(prev => ({ ...prev, connected: false }));
         scheduleRetryRef.current?.();
       }
@@ -626,14 +635,6 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
     postMessage({ type: 'unsubscribe' });
   }, [postMessage]);
 
-  const listSessions = useCallback(() => {
-    postMessage({ type: 'session_list' });
-  }, [postMessage]);
-
-  const deleteSession = useCallback((sessionId: string) => {
-    postMessage({ type: 'session_delete', sessionId });
-  }, [postMessage]);
-
   const resolveTool = useCallback((toolName: string, response: any) => {
     const sessionId = sessionIdRef.current;
     if (sessionId) {
@@ -687,8 +688,6 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
     switchBranch,
     subscribe,
     unsubscribe,
-    listSessions,
-    deleteSession,
     resolveTool,
     cancelTool,
     resolvePermission,

@@ -8,7 +8,6 @@
 //
 // 约定：一个 UI 实例只开一条端口，同一上下文里的其它域走 channel shim 复用它
 // （见 lib/mcp/sidepanel-channel.ts、lib/recorder/sidepanel-channel.ts）。
-// 现状有例外：HistoryPanel 为 session_list / session_delete 各开一条一次性端口，待收口。
 //
 // 注意 `chrome.runtime.sendMessage` 不是寻址投递：它送达发送方之外的所有扩展上下文
 // （background 与已打开的扩展页面；要定向到内容脚本得用 chrome.tabs.sendMessage）。
@@ -242,6 +241,9 @@ export type ServerMessage =
   | { type: 'tool_resolved'; sessionId: string; toolName: string }
   | { type: 'session_loaded'; sessionId: string; session: SessionSnapshot | null }
   | { type: 'session_list_result'; sessions: SessionMeta[] }
+  /** `session_list` 失败。刻意不复用通用 `error`：那条会被聊天视图当成本轮对话出错，
+   *  清掉运行态并弹错误条，而拉列表失败与正在进行的对话毫无关系。 */
+  | { type: 'session_list_error'; error: string }
   | { type: 'session_deleted'; sessionId: string }
   | { type: 'session_created'; sessionId: string; title: string }
   | { type: 'recorder_status'; isRecording: boolean; startedAt: number | null; eventCount: number; truncated?: 'event_limit' | 'time_limit'; initiatorInstanceId: string | null; activeWindowId: number | null }

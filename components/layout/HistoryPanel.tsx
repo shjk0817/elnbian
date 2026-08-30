@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { ArrowLeft, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,7 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { CLIENT_PORT, type ClientMessage, type ServerMessage, type SessionMeta } from '@/lib/ipc/protocol';
+import { type SessionMeta } from '@/lib/ipc/protocol';
+import { useSessionList } from '@/hooks/useSessionList';
 import { showConfirm } from '@/lib/ui/dialog';
 import { t } from '@/lib/i18n';
 
@@ -77,47 +78,11 @@ function formatRelativeTime(timestamp: number): string {
 }
 
 export function HistoryPanel({ open, onClose, onSelectSession, onDeleteSession }: HistoryPanelProps) {
-  const [sessions, setSessions] = useState<SessionMeta[]>([]);
-  const [loading, setLoading] = useState(false);
+  // 列表 + 删除都走 useSessionList 持有的那一条长连接端口。列表带着后台才知道的
+  // `isRunning`（DB 不知道哪些 agent 正在流式），所以不能直接读库。
+  const { sessions, loading, remove } = useSessionList(open);
 
   const groups = useMemo(() => groupSessionsByRecency(sessions, Date.now()), [sessions]);
-
-  // Load via the background port so we can include live `isRunning` state
-  // for each session. The DB itself doesn't know which agents are mid-stream.
-  useEffect(() => {
-    if (!open) return;
-    setLoading(true);
-    const port = chrome.runtime.connect({ name: CLIENT_PORT });
-    let settled = false;
-    const finish = () => {
-      if (settled) return;
-      settled = true;
-      setLoading(false);
-      try { port.disconnect(); } catch { /* already disconnected */ }
-    };
-    const onMessage = (msg: ServerMessage) => {
-      if (msg.type === 'session_list_result') {
-        setSessions(msg.sessions);
-        finish();
-      } else if (msg.type === 'error') {
-        console.warn('[history] session_list error:', msg.error);
-        finish();
-      }
-    };
-    port.onMessage.addListener(onMessage);
-    port.postMessage({ type: 'session_list' } satisfies ClientMessage);
-    // Safety timeout in case the background doesn't respond.
-    const timeout = setTimeout(() => {
-      console.warn('[history] session_list timed out');
-      finish();
-    }, 5000);
-    return () => {
-      clearTimeout(timeout);
-      port.onMessage.removeListener(onMessage);
-      try { port.disconnect(); } catch { /* already disconnected */ }
-      setLoading(false);
-    };
-  }, [open]);
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -130,28 +95,8 @@ export function HistoryPanel({ open, onClose, onSelectSession, onDeleteSession }
       confirmText: t('common.delete'),
     });
     if (!ok) return;
-    try {
-      // Optimistic UI update
-      setSessions(prev => prev.filter(s => s.id !== id));
-      onDeleteSession?.(id);
-      // Send delete to background (handles DB + agent cleanup)
-      const port = chrome.runtime.connect({ name: CLIENT_PORT });
-      const onMessage = (msg: ServerMessage) => {
-        if (msg.type === 'session_deleted' && msg.sessionId === id) {
-          port.onMessage.removeListener(onMessage);
-          port.disconnect();
-        }
-      };
-      port.onMessage.addListener(onMessage);
-      port.postMessage({ type: 'session_delete', sessionId: id } satisfies ClientMessage);
-      // Safety timeout: disconnect after 5s if no response
-      setTimeout(() => {
-        port.onMessage.removeListener(onMessage);
-        try { port.disconnect(); } catch { /* already disconnected */ }
-      }, 5000);
-    } catch (err) {
-      console.error('Failed to delete session:', err);
-    }
+    // 请求没发出去（端口断了）时会话还在，就不能把用户从这个会话上跳走。
+    if (remove(id)) onDeleteSession?.(id);
   };
 
   return (

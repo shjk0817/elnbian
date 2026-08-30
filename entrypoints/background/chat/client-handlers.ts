@@ -229,17 +229,26 @@ const chatClientHandlers: ClientHandlerMap = {
   },
 
   async session_list(port) {
-    const sessions = await sessionStore.list();
-    // Annotate with live running state so the UI can show an indicator
-    // for sessions whose agent is currently mid-stream in the background.
-    const annotated = sessions.map(s => ({
-      ...s,
-      isRunning: sessionManager.getSessionState(s.id)?.isRunning === true,
-    }));
-    post(port, {
-      type: 'session_list_result',
-      sessions: annotated,
-    });
+    // 自己接住失败并走专用回复：交给 router 的通用 error 会被聊天视图当成本轮对话
+    // 出错（清运行态 + 弹错误条），而拉列表跟正在进行的对话没有任何关系。
+    try {
+      const sessions = await sessionStore.list();
+      // Annotate with live running state so the UI can show an indicator
+      // for sessions whose agent is currently mid-stream in the background.
+      const annotated = sessions.map(s => ({
+        ...s,
+        isRunning: sessionManager.getSessionState(s.id)?.isRunning === true,
+      }));
+      post(port, {
+        type: 'session_list_result',
+        sessions: annotated,
+      });
+    } catch (err) {
+      post(port, {
+        type: 'session_list_error',
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   },
 
   async session_delete(_port, msg) {
