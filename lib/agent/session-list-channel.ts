@@ -7,14 +7,22 @@
 // 在此之前 HistoryPanel 每做一件事就自己 connect 一条一次性端口再断开（拉列表一条、
 // 每次删除又一条），请求 / 响应的配对逻辑散在各个回调里。
 
-import type { ClientMessage, SessionMeta } from '@/lib/ipc/protocol';
+import type { SessionPlacement } from '@/lib/persistence/db';
+import type { ClientMessage, ServerMessage, SessionMeta } from '@/lib/ipc/protocol';
+
+/** 失败的那类写操作，取自 `session_write_failed` 的 `op`——不另开一份枚举。 */
+type SessionWriteOp = Extract<ServerMessage, { type: 'session_write_failed' }>['op'];
 
 type ListListener = (sessions: SessionMeta[]) => void;
-type DeletedListener = (sessionId: string) => void;
+type DeletedListener = (sessionIds: string[]) => void;
+type WriteFailedListener = (op: SessionWriteOp, sessionIds: string[], message: string) => void;
+type PlacementListener = (sessionIds: string[], placement: SessionPlacement) => void;
 type ErrorListener = (message: string) => void;
 
 const listListeners = new Set<ListListener>();
 const deletedListeners = new Set<DeletedListener>();
+const writeFailedListeners = new Set<WriteFailedListener>();
+const placementListeners = new Set<PlacementListener>();
 const errorListeners = new Set<ErrorListener>();
 
 /** Active port. Set by `useBackgroundAgent` on connect/disconnect. */
@@ -70,10 +78,24 @@ export const sessionListChannel = {
     }
   },
 
-  /** 某个会话已被删除。后台是广播给所有端口的，因此别的窗口删的也会到这里。 */
-  publishDeleted(sessionId: string): void {
+  /** 这批会话已被删除。后台是广播给所有端口的，因此别的窗口删的也会到这里。 */
+  publishDeleted(sessionIds: string[]): void {
     for (const l of deletedListeners) {
-      try { l(sessionId); } catch (err) { console.warn('[sessionListChannel] deleted listener threw:', err); }
+      try { l(sessionIds); } catch (err) { console.warn('[sessionListChannel] deleted listener threw:', err); }
+    }
+  },
+
+  /** 这批会话的写操作没成功。只发给发起方，用于撤销它的乐观更新。 */
+  publishWriteFailed(op: SessionWriteOp, sessionIds: string[], message: string): void {
+    for (const l of writeFailedListeners) {
+      try { l(op, sessionIds, message); } catch (err) { console.warn('[sessionListChannel] writeFailed listener threw:', err); }
+    }
+  },
+
+  /** 某批会话的列表位置变了。同 `publishDeleted`，别的窗口改的也会到这里。 */
+  publishPlacement(sessionIds: string[], placement: SessionPlacement): void {
+    for (const l of placementListeners) {
+      try { l(sessionIds, placement); } catch (err) { console.warn('[sessionListChannel] placement listener threw:', err); }
     }
   },
 
@@ -98,13 +120,33 @@ export const sessionListChannel = {
     return () => { deletedListeners.delete(l); };
   },
 
+  subscribeWriteFailed(l: WriteFailedListener): () => void {
+    writeFailedListeners.add(l);
+    return () => { writeFailedListeners.delete(l); };
+  },
+
+  subscribePlacement(l: PlacementListener): () => void {
+    placementListeners.add(l);
+    return () => { placementListeners.delete(l); };
+  },
+
   subscribeError(l: ErrorListener): () => void {
     errorListeners.add(l);
     return () => { errorListeners.delete(l); };
   },
 
-  /** Returns true if the message was posted; false if no port is connected. */
-  delete(sessionId: string): boolean {
-    return post({ type: 'session_delete', sessionId } satisfies ClientMessage);
+  /** 重新拉一次列表。用于「本地状态可能已经不对了」的场景（如删除失败后回滚）。 */
+  refresh(): void {
+    requestList();
+  },
+
+  /** 删除一批会话。Returns true if the message was posted; false if no port is connected. */
+  delete(sessionIds: string[]): boolean {
+    return post({ type: 'session_delete', sessionIds } satisfies ClientMessage);
+  },
+
+  /** 设置一批会话的列表位置。Returns true if the message was posted. */
+  setPlacement(sessionIds: string[], placement: SessionPlacement): boolean {
+    return post({ type: 'session_set_placement', sessionIds, placement } satisfies ClientMessage);
   },
 };

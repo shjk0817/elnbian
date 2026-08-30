@@ -17,7 +17,7 @@
 // flush 信号（issue #14）。
 
 import type { AgentMessage } from '@earendil-works/pi-agent-core';
-import type { SessionRecord } from '@/lib/persistence/db';
+import type { SessionPlacement, SessionRecord } from '@/lib/persistence/db';
 import type { ModelIdentity, ThinkingLevel } from '@/lib/persistence/storage';
 import type { Attachment } from '@/lib/agent/attachments';
 import type { RecordedSession } from '@/lib/recorder/types';
@@ -90,7 +90,13 @@ export type ClientMessage =
    *  by the existing steer/cancel path, not this message. */
   | { type: 'resolve_permission'; sessionId: string; toolCallId: string; decision: 'once' | 'always' | 'denied' }
   | { type: 'session_list' }
-  | { type: 'session_delete'; sessionId: string }
+  /** 删除会话。天生批量——单条就是长度 1 的数组，不为它单开一条消息。后台逐个清理
+   *  （工作区 / DB / 活 agent），成功的那些统一由一条 `session_deleted` 广播回来；
+   *  有失败的则向发起端口回一条 `session_write_failed`。 */
+  | { type: 'session_delete'; sessionIds: string[] }
+  /** 设置会话在历史列表里的位置：置顶 / 归档 / 普通（null）。三态互斥，故一条消息
+   *  就覆盖了置顶、取消置顶、归档、取消归档四个动作。同样天生批量。 */
+  | { type: 'session_set_placement'; sessionIds: string[]; placement: SessionPlacement }
   | { type: 'recorder_start' }
   | { type: 'recorder_stop' }
   /** Sent by a sidepanel right after it opens a port, declaring a unique
@@ -133,6 +139,7 @@ export const CLIENT_MESSAGE_TYPES = [
   'switch_branch',
   'session_list',
   'session_delete',
+  'session_set_placement',
   'recorder_start',
   'recorder_stop',
   'hello',
@@ -244,7 +251,15 @@ export type ServerMessage =
   /** `session_list` 失败。刻意不复用通用 `error`：那条会被聊天视图当成本轮对话出错，
    *  清掉运行态并弹错误条，而拉列表失败与正在进行的对话毫无关系。 */
   | { type: 'session_list_error'; error: string }
-  | { type: 'session_deleted'; sessionId: string }
+  /** 这批会话已被删除。与 `session_delete` 同为批量形态；只列真正删成功的。 */
+  | { type: 'session_deleted'; sessionIds: string[] }
+  /** 一次会话写操作失败了（删除 / 改位置）。只回发起端口——客户端是乐观更新的：它已经
+   *  把这些会话摘掉或改了位置，收到这条必须把权威列表拉回来，否则界面会永久停在一个
+   *  库里并不存在的状态上。刻意不复用通用 `error`：那条会被聊天视图当成本轮对话出错。 */
+  | { type: 'session_write_failed'; op: 'delete' | 'placement'; sessionIds: string[]; error: string }
+  /** 会话的列表位置变了。广播给所有端口，让其它窗口已打开的历史面板同步，
+   *  与 `session_deleted` 同款。 */
+  | { type: 'session_placement_changed'; sessionIds: string[]; placement: SessionPlacement }
   | { type: 'session_created'; sessionId: string; title: string }
   | { type: 'recorder_status'; isRecording: boolean; startedAt: number | null; eventCount: number; truncated?: 'event_limit' | 'time_limit'; initiatorInstanceId: string | null; activeWindowId: number | null }
   | { type: 'recorder_session'; session: RecordedSession }

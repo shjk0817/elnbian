@@ -96,7 +96,7 @@ export function HistoryPanel({ open, onClose, onSelectSession, onDeleteSession }
     });
     if (!ok) return;
     // 请求没发出去（端口断了）时会话还在，就不能把用户从这个会话上跳走。
-    if (remove(id)) onDeleteSession?.(id);
+    if (remove([id])) onDeleteSession?.(id);
   };
 
   return (

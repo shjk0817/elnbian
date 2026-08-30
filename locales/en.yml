@@ -18,6 +18,8 @@ common:
     week: "Previous 7 days"
     month: "Previous 30 days"
     older: "Older"
+    pinned: "Pinned"
+    archived: "Archived"
   toggleTheme: "Toggle theme"
   settings: "Settings"
   back: "Back"
@@ -75,6 +77,12 @@ common:
     # $1 = session title
     deleteConfirmDescription: "\"$1\" and its workspace files will be permanently removed. This cannot be undone."
     running: "Agent is running"
+    pin: "Pin"
+    unpin: "Unpin"
+    archive: "Archive"
+    unarchive: "Unarchive"
+    deleteFailed: "Could not delete. The chat is still there."
+    placementFailed: "Could not update the chat. Nothing changed."
     # $1 = message count
     messageCount:
       0: "No messages"

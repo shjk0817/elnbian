@@ -265,7 +265,15 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
           break;
 
         case 'session_deleted':
-          sessionListChannel.publishDeleted(msg.sessionId);
+          sessionListChannel.publishDeleted(msg.sessionIds);
+          break;
+
+        case 'session_write_failed':
+          sessionListChannel.publishWriteFailed(msg.op, msg.sessionIds, msg.error);
+          break;
+
+        case 'session_placement_changed':
+          sessionListChannel.publishPlacement(msg.sessionIds, msg.placement);
           break;
 
         case 'session_list_error':

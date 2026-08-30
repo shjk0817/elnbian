@@ -17,6 +17,8 @@ common:
     week: "7 天內"
     month: "30 天內"
     older: "更早"
+    pinned: "置頂"
+    archived: "已封存"
   toggleTheme: "切換主題"
   settings: "設定"
   back: "返回"
@@ -71,6 +73,12 @@ common:
     # $1 = 會話標題
     deleteConfirmDescription: "「$1」以及它的工作區檔案將被永久刪除，此操作無法復原。"
     running: "工作中"
+    pin: "置頂"
+    unpin: "取消置頂"
+    archive: "封存"
+    unarchive: "取消封存"
+    deleteFailed: "刪除失敗，對話仍在。"
+    placementFailed: "更新失敗，未做變更。"
     # $1 = 訊息數
     messageCount:
       0: "尚無訊息"
