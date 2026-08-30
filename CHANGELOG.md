@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.6.0 - 2026-08-31
+
 ### 新增 / Added
 
 - 历史对话列表支持置顶与归档：置顶的会话固定在列表最前，不会被后来的对话挤下去；归档的会话收进列表底部默认折叠的「已归档」分组，看得见但不碍事。悬停任一会话即可一键置顶，归档与删除收在「更多操作」菜单里 ([#45](https://github.com/maotoumao/Cebian/issues/45))
