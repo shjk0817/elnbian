@@ -77,6 +77,19 @@ common:
     unpin: "取消置顶"
     archive: "归档"
     unarchive: "取消归档"
+    select: "选择"
+    # $1 = 已选中的会话数
+    selectedCount:
+      1: "已选 1 项"
+      n: "已选 $1 项"
+    # $1 = 待删除的会话数
+    deleteManyConfirmTitle:
+      1: "删除该会话？"
+      n: "删除这 $1 个会话？"
+    # $1 = 待删除的会话数
+    deleteManyConfirmDescription:
+      1: "该会话及其工作区文件将被永久删除，且无法恢复。"
+      n: "这 $1 个会话及其工作区文件将被永久删除，且无法恢复。"
     deleteFailed: "删除失败，会话仍在。"
     placementFailed: "更新失败，未做改动。"
     # $1 = 消息数

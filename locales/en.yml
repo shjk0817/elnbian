@@ -81,6 +81,19 @@ common:
     unpin: "Unpin"
     archive: "Archive"
     unarchive: "Unarchive"
+    select: "Select"
+    # $1 = number of selected chats
+    selectedCount:
+      1: "1 selected"
+      n: "$1 selected"
+    # $1 = number of chats to delete
+    deleteManyConfirmTitle:
+      1: "Delete 1 chat?"
+      n: "Delete $1 chats?"
+    # $1 = number of chats to delete
+    deleteManyConfirmDescription:
+      1: "The chat and its workspace files will be permanently removed. This cannot be undone."
+      n: "$1 chats and their workspace files will be permanently removed. This cannot be undone."
     deleteFailed: "Could not delete. The chat is still there."
     placementFailed: "Could not update the chat. Nothing changed."
     # $1 = message count

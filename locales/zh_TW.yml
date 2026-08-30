@@ -69,14 +69,27 @@ common:
     # $1 = 年數
     yearsAgo: "$1 年前"
   session:
-    deleteConfirmTitle: "刪除會話？"
-    # $1 = 會話標題
+    deleteConfirmTitle: "刪除對話？"
+    # $1 = 對話標題
     deleteConfirmDescription: "「$1」以及它的工作區檔案將被永久刪除，此操作無法復原。"
     running: "工作中"
     pin: "置頂"
     unpin: "取消置頂"
     archive: "封存"
     unarchive: "取消封存"
+    select: "選取"
+    # $1 = 已選取的對話數
+    selectedCount:
+      1: "已選 1 項"
+      n: "已選 $1 項"
+    # $1 = 待刪除的對話數
+    deleteManyConfirmTitle:
+      1: "刪除該對話？"
+      n: "刪除這 $1 個對話？"
+    # $1 = 待刪除的對話數
+    deleteManyConfirmDescription:
+      1: "該對話及其工作區檔案將被永久刪除，且無法復原。"
+      n: "這 $1 個對話及其工作區檔案將被永久刪除，且無法復原。"
     deleteFailed: "刪除失敗，對話仍在。"
     placementFailed: "更新失敗，未做變更。"
     # $1 = 訊息數

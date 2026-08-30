@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### 新增 / Added
+
+- 历史对话列表支持置顶与归档：置顶的会话固定在列表最前，不会被后来的对话挤下去；归档的会话收进列表底部默认折叠的「已归档」分组，看得见但不碍事。悬停任一会话即可一键置顶，归档与删除收在「更多操作」菜单里 ([#45](https://github.com/maotoumao/Cebian/issues/45))
+- 历史对话列表支持多选批量操作：在会话的「更多操作」菜单里选「选择」进入选择模式，点选若干会话后一次性置顶、归档或删除。按住 Shift 点击可选中一整段连续的会话，适合清理一次性开出来的临时对话 ([#45](https://github.com/maotoumao/Cebian/issues/45))
+
+- The chat history list now supports pinning and archiving: pinned chats stay at the top of the list instead of being pushed down by newer ones, and archived chats move into a collapsed "Archived" group at the bottom — visible but out of the way. Hover any chat to pin it in one click; archive and delete live in its More actions menu ([#45](https://github.com/maotoumao/Cebian/issues/45))
+- The chat history list now supports multi-select: pick "Select" from a chat's More actions menu to enter selection mode, then pin, archive or delete several chats at once. Shift-click selects a whole run of consecutive chats, which is handy for clearing out one-off side conversations ([#45](https://github.com/maotoumao/Cebian/issues/45))
+
 ### 变更 / Changed
 
 - 模型选择器现在会明确标出已不可用的模型（被提供商下架、自定义模型被删、或该提供商的凭据已移除），并在发送前就提示重新选择，而不是等请求发出去才失败。对话输入框与设置页里的模型选择器都适用 ([#62](https://github.com/maotoumao/Cebian/issues/62))
