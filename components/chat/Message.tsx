@@ -1,4 +1,4 @@
-import { Bot, ChevronDown, ChevronLeft, ChevronRight, Lightbulb, CheckCircle, Crosshair, FileText, Film, FoldVertical, Pencil, ShieldAlert } from 'lucide-react';
+import { Bot, ChevronLeft, ChevronRight, Lightbulb, CheckCircle, Crosshair, FileText, Film, FoldVertical, Pencil, ShieldAlert } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,7 +82,6 @@ export function UserMessageBubble({
 }) {
   const text = msg ? extractUserText(msg) : null;
   const slashPrompt = useMemo(() => msg ? extractSlashPrompt(msg) : null, [msg]);
-  const [promptOpen, setPromptOpen] = useState(false);
   const attachments = useMemo(() => msg ? extractUserAttachments(msg) : null, [msg]);
   const hasAttachments = attachments && (attachments.images.length > 0 || attachments.elements.length > 0 || attachments.files.length > 0 || attachments.recordings.length > 0);
 
@@ -146,35 +145,17 @@ export function UserMessageBubble({
     );
   }
 
-  const bubble = text ?? children;
-  // 只挂提示词、没打字的那一轮 text 是空串——此时别渲染一个空气泡框，让提示词块自己
-  // 充当这条消息的全部内容。
+  // 携带的提示词就写成气泡里的第一段普通文字 `/名字`，与用户自己敲的话同一个样式——
+  // 它本来就是这一轮消息的一部分，不值得为它单开一块 UI。正文（模板展开后的那一大段）
+  // 不在气泡里露出：气泡只显示用户看得懂、也确实「打过」的那几个字。
+  const slashText = slashPrompt ? `/${slashPrompt.name}` : null;
+  const bubbleText = slashText ? (text ? `${slashText} ${text}` : slashText) : text;
+  const bubble = bubbleText ?? children;
+  // 一个字没打、也没挂提示词的空消息不渲染气泡框，免得留一个空壳。
   const hasBubble = typeof bubble === 'string' ? bubble.length > 0 : bubble != null;
 
-  // 气泡上方那枚 `/名字` 标签：点开看本轮实际发出的提示词正文。它是发送后的回执，
-  // 输入框里那截 `/名字` 则是发送前会被剥掉的纯文本——两者不必也不该共用一套样式。
   return (
     <div className="self-end max-w-[95%] group/user">
-      {slashPrompt && (
-        <div className="flex flex-col items-end mb-1.5">
-          <button
-            type="button"
-            aria-expanded={promptOpen}
-            title={t('chat.message.slashPromptToggle')}
-            onClick={() => setPromptOpen((v) => !v)}
-            className="inline-flex max-w-full items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[0.78rem] leading-snug text-primary hover:bg-primary/15"
-          >
-            <span className="min-w-0 truncate">/{slashPrompt.name}</span>
-            <ChevronDown className={`size-2.5 shrink-0 transition-transform ${promptOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {promptOpen && (
-            <div className="mt-1 max-h-60 overflow-y-auto rounded-lg border border-border bg-muted/40 px-3 py-2 text-[0.75rem] leading-relaxed whitespace-pre-wrap break-all text-muted-foreground">
-              {slashPrompt.body}
-            </div>
-          )}
-        </div>
-      )}
-
       {hasBubble && (
         <div className="bg-card border border-border px-4 py-3 rounded-2xl text-[0.9rem] leading-relaxed w-fit ml-auto whitespace-pre-wrap break-all">
           {bubble}
@@ -241,8 +222,12 @@ export function UserMessageBubble({
       {text != null && (
         <div className="flex h-8 items-center justify-end gap-1.5 px-1">
           <div className="flex items-center gap-1 opacity-0 pointer-events-none transition-opacity group-hover/user:opacity-100 group-hover/user:pointer-events-auto group-focus-within/user:opacity-100 group-focus-within/user:pointer-events-auto [@media(hover:none)]:opacity-100 [@media(hover:none)]:pointer-events-auto">
-            {/* chip-only turn has no text to copy — editing it to add text is still fine */}
-            {hasBubble && <CopyButton text={text ?? ''} />}
+            {/*
+              * 复制的就是气泡里显示的那段（含开头的 `/名字`），所见即所得。
+              * `hasBubble` 为真时它必然非空，空消息也就不会给出一个「复制了空字符串」
+              * 的假成功。
+              */}
+            {hasBubble && <CopyButton text={bubbleText ?? ''} />}
             {onEdit && (
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback, useImperativeHandle, forwardRef, type KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, useImperativeHandle, forwardRef, type KeyboardEvent } from 'react';
 import { Send, Square, MousePointer2, Camera, Paperclip, Smartphone, Crosshair, FileText, X, FileType, Film } from 'lucide-react';
 import { showDialog } from '@/lib/ui/dialog';
 import { toast } from 'sonner';
@@ -19,7 +19,7 @@ import { startElementPicker, cancelElementPicker } from '@/lib/browser/element-p
 import { scanPrompts, type PromptMeta } from '@/lib/ai-config/scanner';
 import { replaceTemplateVars } from '@/lib/ai-config/template';
 import { gatherTemplateVars } from '@/lib/ai-config/template-vars-sidepanel';
-import { isSlashQuery, splitSlashToken, type SlashPrompt } from '@/lib/ai-config/slash-prompt';
+import type { SlashPrompt } from '@/lib/ai-config/slash-prompt';
 import { vfs } from '@/lib/persistence/vfs';
 import { parseFrontmatter } from '@/lib/content/frontmatter';
 import { CEBIAN_PROMPTS_DIR } from '@/lib/persistence/vfs-paths';
@@ -74,13 +74,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 ) {
   const [value, setValue] = useState('');
   const [showSlash, setShowSlash] = useState(false);
-  // 本轮挂着的斜杠提示词。选中 `/x` 不再把正文倒进输入框，只在输入框开头留下 `/name`
-  // 这截文本，正文在发送时自成信封里的一段，用户气泡里也就只剩用户自己敲的字（issue #53）。
-  // 是否真的生效以输入框里那截文本为准，一律走 `splitSlashToken` 判定。
+  // 本轮挂着的斜杠提示词。选中 `/x` 不把正文倒进输入框，而是在输入框首行左端挂一枚
+  // `/名字` 标记，正文在发送时自成信封里的一段，不掺进用户自己敲的话（issue #53）。
+  // 标记是独立元素、不是文本：因此它天然不可分割——选区碰不到它、光标进不去，
+  // 也就不需要任何「从文本里认出它」的解析。
   const [slashPrompt, setSlashPrompt] = useState<SlashPrompt | null>(null);
+  // 标记的实测宽度。textarea 的 `text-indent` 只缩进首行，用它给标记让出位置，
+  // 文字便从标记右侧接着流，换行后第二行自动回到整宽。
+  const slashPillRef = useRef<HTMLSpanElement>(null);
+  const [slashPillWidth, setSlashPillWidth] = useState(0);
   // 选中一条提示词要 await 读 VFS + 采集模板变量（页面脚本注入、剪贴板），期间用户可能
-  // 已经切了会话、又点了另一条，或者干脆已经把消息发出去了。这三处都自增，选中落定前
-  // 比对世代号，过期的结果直接丢弃。
+  // 已经切了会话、又点了另一条、把已挂的标记退格摘掉，或者干脆已经把消息发出去了。
+  // 这四处都自增，选中落定前比对世代号，过期的结果直接丢弃。
   const slashPromptSeqRef = useRef(0);
   const [prompts, setPrompts] = useState<PromptMeta[]>([]);
   const [selectedPromptIndex, setSelectedPromptIndex] = useState(0);
@@ -285,6 +290,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     openMicPermissionPage();
   }, [speechActive, finalizePendingInterim, speech]);
 
+  /** 输入框滚动时把标记一并带走。它绝对定位在容器上、不跟随文本滚动，不同步就会
+   *  浮在原地压住滚上来的第二屏文字。外层的 `overflow-hidden` 负责裁掉溢出部分。 */
+  const syncSlashPillOffset = useCallback(() => {
+    const pill = slashPillRef.current;
+    const ta = textareaRef.current;
+    if (pill && ta) pill.style.transform = `translateY(${-ta.scrollTop}px)`;
+  }, []);
+
   // Auto-resize textarea. When the value is empty (initial mount, after
   // send) we clear the inline height entirely and let CSS `min-h-13 /
   // max-h-37.5` drive sizing. This avoids a first-paint race in the
@@ -302,7 +315,31 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     }
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 150) + 'px';
-  }, [value]);
+    // 高度变了 scrollTop 可能被浏览器悄悄改掉（且不发 scroll 事件），补一次同步。
+    syncSlashPillOffset();
+    // 也要盯着 `slashPillWidth`：标记挂上/摘掉会改变 `text-indent`，首行随之重排、
+    // 行数可能变，但 value 一个字都没动——只看 value 的话高度就停在旧值上了。
+  }, [value, slashPillWidth, syncSlashPillOffset]);
+
+  // 标记宽度只能实测：提示词名字的长度、界面字体、侧边栏宽度（`max-w-[45%]` 截断）
+  // 都会改变它，写死任何常量都会让首行文字与标记错位。ResizeObserver 覆盖字体加载
+  // 完成、侧边栏拖宽这些迟到的变化。
+  useLayoutEffect(() => {
+    const pill = slashPillRef.current;
+    if (!pill) {
+      setSlashPillWidth(0);
+      return;
+    }
+    // +6px：标记与正文之间的呼吸位。
+    const measure = () => {
+      setSlashPillWidth(Math.ceil(pill.getBoundingClientRect().width) + 6);
+      syncSlashPillOffset();
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(pill);
+    return () => observer.disconnect();
+  }, [slashPrompt?.name, syncSlashPillOffset]);
 
   // Cancel picker on unmount
   useEffect(() => {
@@ -321,9 +358,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [isPicking]);
 
-  // 挂着的提示词以 `/name` 的形态就待在 value 里，所以只看文本即可：只挂提示词、
-  // 一个字没打，value 里也还有那截 token，照样可发。
-  const canSend = value.trim().length > 0;
+  // 只挂了提示词、一个字没打也算可发——提示词本身就是这一轮的请求。
+  const canSend = value.trim().length > 0 || slashPrompt !== null;
 
   // Recorder integration. The captured session lands in attachments via
   // the channel subscription below — NOT via `recorder.stop()`'s return
@@ -389,10 +425,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 
     // Snapshot the text BEFORE any await so a fast follow-up edit doesn't
     // leak into the outgoing message.
-    // 开头那截 `/name` 是这一轮携带的指令、不是用户说的话，发送时剥掉；它已被改动
-    // 或删掉的话 `active` 就是 undefined，这一轮不带提示词。
-    const { body, active: outgoingPrompt } = splitSlashToken(outgoingText, slashPrompt);
-    const text = body.trim();
+    const text = outgoingText.trim();
     const dispatchSessionId = sessionIdRef.current;
 
     isDispatchingRef.current = true;
@@ -420,7 +453,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       if (sessionIdRef.current !== dispatchSessionId) return;
 
       const outgoing = attachmentsRef.current;
-      const result = await onSend(text, outgoing.length > 0 ? outgoing : undefined, dispatchSessionId, outgoingPrompt);
+      const result = await onSend(text, outgoing.length > 0 ? outgoing : undefined, dispatchSessionId, slashPrompt ?? undefined);
       if (result.status !== 'dispatched') return;
       if (sessionIdRef.current !== dispatchSessionId) return;
 
@@ -482,25 +515,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       }
     }
 
-    // 开头那截 `/name` 语义上是一条不可分割的指令，不是一串能逐字啃掉的普通字符：
-    // 光标落在它身上按 Backspace / Delete 就整块删掉，并解除本轮挂载。有选区时不拦，
-    // 交给浏览器按「删掉选中这片文字」的常规语义处理。
-    if ((e.key === 'Backspace' || e.key === 'Delete') && slashToken.active) {
+    // 光标停在最前面再按退格 = 摘掉挂着的提示词。标记就在文字前面，「往前删」删到的
+    // 正是它——与 ChatGPT / Claude 的 pill 一致。整块摘除是唯一的粒度，因为它压根
+    // 不是文本，没有「删掉一半」这回事。
+    if (e.key === 'Backspace' && slashPrompt) {
       const ta = textareaRef.current;
-      const caret = ta?.selectionStart ?? 0;
-      const inToken = e.key === 'Backspace'
-        ? caret > 0 && caret <= slashToken.end
-        : caret < slashToken.end;
-      if (ta && ta.selectionStart === ta.selectionEnd && inToken) {
+      if (ta && ta.selectionStart === 0 && ta.selectionEnd === 0) {
         e.preventDefault();
-        // 连带吃掉 token 与正文之间那一个分隔空格（换行留着，那是用户自己敲的换行）。
-        const rest = value.slice(slashToken.end).replace(/^[ \t]/, '');
-        setValue(rest);
         setSlashPrompt(null);
         slashPromptSeqRef.current++;
-        // 删掉 token 后剩下的可能又是一截 `/xxx`（`/a /b` 删掉前者），照常开菜单。
-        setShowSlash(isSlashQuery(rest, null));
-        requestAnimationFrame(() => textareaRef.current?.setSelectionRange(0, 0));
         return;
       }
     }
@@ -526,6 +549,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
           });
         };
 
+        // 翻历史只换文本，不动挂着的提示词：「这一轮带什么指令」与「这一轮说什么话」
+        // 是两件事。外部 `fill()` 同理。
         if (e.key === 'ArrowUp' && ta.selectionStart === 0 && ta.selectionEnd === 0) {
           if (historyIndex === null) {
             e.preventDefault();
@@ -576,9 +601,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 
   const handleInput = (val: string) => {
     setValue(val);
-    // 菜单只在用户还在打筛选词时开着：开头那截已经是挂上的 token，说明这一轮在写正文，
-    // 不该再把菜单弹出来挡着（判据见 `isSlashQuery`）。
-    setShowSlash(isSlashQuery(val, slashPrompt));
+    setShowSlash(val.startsWith('/'));
     // Manual edits exit history mode — the new content becomes the draft.
     if (historyIndex !== null) setHistoryIndex(null);
   };
@@ -596,10 +619,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   // 由外部（欢迎页示例卡片）填入文本并聚焦，不夺走输入框对 value 的所有权。
   const fill = useCallback((text: string) => {
     setValue(text);
-    // 外部填入的是完整一段文本，等于整体替换输入框内容——原来挂着的提示词随之作废。
-    setSlashPrompt(null);
-    slashPromptSeqRef.current++;
-    setShowSlash(isSlashQuery(text, null));
+    setShowSlash(text.startsWith('/'));
     setHistoryIndex(null);
     // 等 value 提交后再聚焦并把光标移到末尾，方便用户接着改。
     focusCaretAtEnd();
@@ -612,9 +632,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     if (!showSlash) return;
     scanPrompts().then(setPrompts).catch(() => setPrompts([]));
   }, [showSlash]);
-
-  // 挂着的 token 在输入框里的当前状态。`end` 是 `/name` 的长度，整块删除时按它切。
-  const slashToken = useMemo(() => splitSlashToken(value, slashPrompt), [value, slashPrompt]);
 
   // Filter prompts by typed search (after '/')
   const slashFilter = value.startsWith('/') ? value.slice(1).toLowerCase() : '';
@@ -654,8 +671,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     if (isDispatchingRef.current) return;
     const seq = ++slashPromptSeqRef.current;
     const selectedSessionId = sessionIdRef.current;
-    // 选中那一刻输入框里的内容（就是用来筛选的 `/xxx`）。落定时只有它一字未改才清空，
-    // 否则会把用户在等待期间敲进去的话抹掉。
+    // 选中那一刻输入框里的内容（就是用来筛选的 `/xxx`）。落定时按它剥前缀，
+    // 等待期间接着敲进去的话必须原样留下。
     const queryAtSelect = value;
     // 结果落定时仍是同一个会话、且没有更晚的选中把它顶掉，才允许写入。
     const stillCurrent = () =>
@@ -667,17 +684,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       const content = typeof raw === 'string' ? raw : new TextDecoder().decode(raw as Uint8Array);
       const { body } = parseFrontmatter(content);
       const vars = await gatherTemplateVars();
-      // 模板变量在**选中的这一刻**展开：挂上去的正文就是最终会发出去的文本，
-      // 已发送气泡上展开给用户看的也是它，所见即所发。
+      // 模板变量在**选中的这一刻**展开：挂上去的正文就是最终会发出去的文本。
       const replaced = replaceTemplateVars(body.trim(), vars);
       if (!stillCurrent()) return;
       setSlashPrompt({ name: prompt.name, body: replaced });
-      // 把开头那截用来筛选的 `/xxx` 原地换成 `/name `：它就是输入框里的一段普通文本，
-      // 字号行高与其余文字一致，不占额外一行、不撑高输入框。等待期间用户接着打的字
-      // 留在 token 后面，不覆盖。
+      // 清掉用来筛选的那截 `/xxx`——它的使命结束了，提示词已经挂成标记。
+      // 读 VFS + 采集模板变量是个不短的 await，期间用户完全可能接着往下敲，
+      // 那些字是他要发的正文，一个都不能抹掉。
       setValue((v) => {
-        const rest = (v === queryAtSelect ? '' : v.replace(/^\/\S*/, '')).replace(/^[ \t]+/, '');
-        return rest ? `/${prompt.name} ${rest}` : `/${prompt.name} `;
+        if (v.startsWith(queryAtSelect)) return v.slice(queryAtSelect.length).replace(/^[ \t]+/, '');
+        // 等待期间把筛选词自己改短 / 改乱了：仍按「开头那截非空白」当筛选词剥掉。
+        if (v.startsWith('/')) return v.replace(/^\/\S*/, '').replace(/^[ \t]+/, '');
+        return v;
       });
       setShowSlash(false);
       focusCaretAtEnd();
@@ -1089,18 +1107,36 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
           )}
         </div>
 
-        {/* Textarea */}
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          value={value}
-          onChange={(e) => handleInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          placeholder={t('chat.composer.placeholder')}
-          disabled={isDispatching}
-          className="w-full bg-transparent border-none outline-none resize-none text-foreground text-[0.85rem] px-3 py-2 min-h-13 max-h-37.5 leading-relaxed placeholder:text-muted-foreground/50"
-        />
+        {/* Textarea + slash prompt pill.
+          * 标记绝对定位在首行左端，textarea 用 `text-indent` 给它让出首行的位置；
+          * 外层 `overflow-hidden` 负责在输入框滚动时把它裁掉。
+          */}
+        <div className="relative overflow-hidden">
+          {slashPrompt && (
+            <span
+              ref={slashPillRef}
+              // `top-2 / left-3` 对齐 textarea 的 `py-2 / px-3`；字号行高与首行文字
+              // 完全一致，标记的盒高因此正好是一个行框，天然坐在首行上。
+              // `max-w-[45%]` 保证名字再长，首行也总还有地方写字。
+              className="pointer-events-none absolute top-2 left-3 max-w-[45%] truncate rounded-md bg-primary/10 px-1.5 font-mono text-[0.85rem] leading-relaxed text-primary"
+            >
+              /{slashPrompt.name}
+            </span>
+          )}
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            value={value}
+            onChange={(e) => handleInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onScroll={syncSlashPillOffset}
+            placeholder={t('chat.composer.placeholder')}
+            disabled={isDispatching}
+            style={slashPrompt && slashPillWidth ? { textIndent: slashPillWidth } : undefined}
+            className="w-full bg-transparent border-none outline-none resize-none text-foreground text-[0.85rem] px-3 py-2 min-h-13 max-h-37.5 leading-relaxed placeholder:text-muted-foreground/50"
+          />
+        </div>
 
         {/* Bottom row: actions */}
         <div className="flex items-center justify-between px-2 pb-1.5">

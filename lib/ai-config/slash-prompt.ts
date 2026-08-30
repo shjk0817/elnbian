@@ -3,11 +3,9 @@
  *
  * 它是「本轮携带的一段指令」，不是用户自己敲的话——所以在 user 消息的信封里自成一块
  * `<slash-prompt>`，而不是拼进 `<user-request>`。两个直接好处：
- * - transcript 里的用户气泡只显示用户真正打的字（`extractUserText` 只读 `<user-request>`）；
+ * - transcript 里的用户气泡只显示 `/名字` 加用户真正打的字，不展开正文（`extractUserText`
+ *   只读 `<user-request>`）；
  * - 编辑一条已发送的消息不会把这段指令一起改掉（`replaceUserText` 同样只动 `<user-request>`）。
- *
- * 这个模块同时管住这条提示词的两副面孔：输入框里开头那截 `/name` 文本（`splitSlashToken`、
- * `isSlashQuery`），以及发出去时信封里的那一块（`buildSlashPromptBlock`）。
  */
 
 import { escapeXml } from '@/lib/utils';
@@ -15,8 +13,8 @@ import { escapeXml } from '@/lib/utils';
 export interface SlashPrompt {
   /** 提示词名（frontmatter 的 `name`，缺省为文件名），即菜单里 `/` 后面那截。 */
   name: string;
-  /** 模板变量**已展开**的正文。展开发生在选中的那一刻，所以这里就是最终会发出去的
-   *  文本——已发送气泡上展开给用户看的也是它，所见即所发。 */
+  /** 模板变量**已展开**的正文。展开发生在选中的那一刻，所以这里就是最终发给模型的
+   *  文本（气泡里不展开它）。 */
   body: string;
 }
 
@@ -28,47 +26,6 @@ export interface SlashPrompt {
  *  刻意不带尖括号：它被放进 `<user-request>` 里，写成 `<slash-prompt>` 会在信封里留下
  *  一个没有闭合的嵌套元素。 */
 export const SLASH_PROMPT_ONLY_REQUEST = 'Follow the instructions in the slash-prompt block above.';
-
-export interface SlashTokenSplit {
-  /** 剥掉开头 token 之后剩下的正文，也就是用户自己敲的那些字。 */
-  body: string;
-  /** 这一轮真正生效的提示词。文本里的 token 已被改动 / 删掉时为 undefined。 */
-  active: SlashPrompt | undefined;
-  /** token 在文本里的结束下标（即 `/name` 的长度），失配时为 0。 */
-  end: number;
-}
-
-/**
- * 把待发文本从开头那截 `/name` 处切开。
- *
- * 挂载以输入框里的文本为准：`/name` 仍完整待在最开头，这一轮才真的带着这条提示词。
- * 用户把它改成 `/nam`、或整段删掉，挂载就随之解除——屏幕上是什么就发什么，绝不会
- * 出现「看不见却偷偷带着一段提示词」。
- *
- * token 后面紧跟的那个字符必须是空白或没有：`/name` 匹配、`/name 总结这页` 匹配，
- * 而 `/nameX` 是另一个词，不匹配。
- */
-export function splitSlashToken(text: string, prompt: SlashPrompt | null | undefined): SlashTokenSplit {
-  if (prompt) {
-    const head = `/${prompt.name}`;
-    if (text.startsWith(head)) {
-      const body = text.slice(head.length);
-      if (body === '' || /^\s/.test(body)) return { body, active: prompt, end: head.length };
-    }
-  }
-  return { body: text, active: undefined, end: 0 };
-}
-
-/**
- * 输入框里这段文本还是「正在打的斜杠筛选词」吗——`/` 开头，且开头那截不是已经挂上的
- * token。挂上之后输入框开头同样是 `/`，但那一轮用户在写正文，不该再把菜单弹出来挡着。
- *
- * 刻意不按「出现空白」截断：筛选词同时匹配提示词的 description，而 description 本来
- * 就是多个词，`/当前 页面` 这样接着筛必须还能用。
- */
-export function isSlashQuery(text: string, prompt: SlashPrompt | null | undefined): boolean {
-  return text.startsWith('/') && splitSlashToken(text, prompt).active === undefined;
-}
 
 /**
  * 把一条斜杠提示词拼成信封里的 `<slash-prompt>` 块。

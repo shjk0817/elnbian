@@ -471,7 +471,7 @@ export function useBackgroundAgent(callbacks: AgentPortCallbacks) {
       //
       // 请求块**无条件**包：不包的话这条消息是「裸文本」，用户自己打的字里若出现字面量
       // `<user-request>`，乐观态与广播态会解析出不同的结果。提示词块则在带了提示词时才包，
-      // 否则只留着 `/名字`、没打字的那一轮会渲染成彻底空白（没气泡也没标签），像消息发丢了。
+      // 否则只挂了提示词、没打字的那一轮会渲染成彻底空白（连气泡都没有），像消息发丢了。
       const request = wrapUserRequest(text.trim());
       const optimisticText = slashPrompt
         ? `${buildSlashPromptBlock(slashPrompt)}\n\n${request}`
