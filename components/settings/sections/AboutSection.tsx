@@ -55,8 +55,9 @@ export function AboutSection() {
       <h2 className="text-base font-semibold">{t('settings.about.title')}</h2>
 
       <div className="space-y-1">
-        <p className="text-sm font-medium">Cebian v{current}</p>
+        <p className="text-sm font-medium">{t('app.brandName')} v{current}</p>
         <p className="text-xs text-muted-foreground">{t('settings.about.tagline')}</p>
+        <p className="text-xs text-muted-foreground">{t('settings.about.forkNotice')}</p>
         <div className="flex gap-2 pt-2 text-xs text-muted-foreground">
           <a
             href="https://cebian.catcat.work"

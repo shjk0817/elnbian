@@ -28,10 +28,14 @@ import {
   pageActionsConfig,
   floatingBallPosition,
   pendingSidePanelHandoff,
+  elnAuthCache,
+  elnBuiltinBundleVersion,
+  mineruSettings,
   type MCPServerConfig,
   type ProviderCredentials,
   type WebDavConfig,
   type CustomProviderConfig,
+  type MineruSettings,
 } from '@/lib/persistence/storage';
 
 /**
@@ -350,6 +354,22 @@ export const BACKUP_REGISTRY: BackupEntry<any>[] = [
   entry({ item: lastSettingsSection, storageClass: 'exclude' }),
   entry({ item: updateNoticeState, storageClass: 'exclude' }),
   entry({ item: pendingChangelogVersion, storageClass: 'exclude' }),
+  // ELN 登录态（派生，可重新 sync_auth）。
+  entry({ item: elnAuthCache, storageClass: 'exclude' }),
+  // 内置 ELN 包版本号（安装时自动写入）。
+  entry({ item: elnBuiltinBundleVersion, storageClass: 'exclude' }),
+  entry({
+    item: mineruSettings,
+    storageClass: 'settings',
+    splitSecret: (v: MineruSettings) => ({
+      safe: { ...v, apiToken: '' },
+      secret: { apiToken: v.apiToken },
+    }),
+    restoreSecret: (local: MineruSettings, secret: unknown) => ({
+      ...local,
+      apiToken: (secret as { apiToken?: string })?.apiToken ?? local.apiToken,
+    }),
+  }),
 ];
 
 /** BACKUP_REGISTRY 中所有已登记的 storage key 集合（供覆盖性测试比对）。 */

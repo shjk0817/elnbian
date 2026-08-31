@@ -1,0 +1,1945 @@
+{
+  "createdAt": "2026-08-26T01:51:24.642Z",
+  "templateId": 298,
+  "versionId": 332,
+  "name": "API全量分析-1787709084420",
+  "categoryId": 50,
+  "editUrl": "http://10.1.228.52/design/table/template-design/?id=298",
+  "componentTypes": [],
+  "patchPayload": {
+    "formTemplateJson": {
+      "form": {
+        "labelCol": 6,
+        "wrapperCol": 12,
+        "labelWrap": true
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rootCard": {
+            "type": "void",
+            "name": "rootCard",
+            "x-designable-id": "ctwonl4wjvc",
+            "x-index": 0,
+            "x-component": "Card",
+            "x-component-props": {
+              "title": "全量组件测试"
+            },
+            "properties": {
+              "basicGrid": {
+                "type": "void",
+                "name": "basicGrid",
+                "x-designable-id": "wf2pw8s8tcs",
+                "x-index": 1,
+                "x-component": "FormGrid",
+                "x-component-props": {
+                  "minColumns": 2,
+                  "maxColumns": 2,
+                  "title": "基础字段"
+                },
+                "properties": {
+                  "fldInput": {
+                    "type": "string",
+                    "name": "fldInput",
+                    "x-designable-id": "9k92umc6jwu",
+                    "x-index": 2,
+                    "title": "文本输入",
+                    "x-decorator": "FormItem",
+                    "x-component": "Input",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldTextArea": {
+                    "type": "string",
+                    "name": "fldTextArea",
+                    "x-designable-id": "emmp6w4wdd1",
+                    "x-index": 3,
+                    "title": "多行文本",
+                    "x-decorator": "FormItem",
+                    "x-component": "Input.TextArea",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldNumber": {
+                    "type": "number",
+                    "name": "fldNumber",
+                    "x-designable-id": "rsgh5xoejb2",
+                    "x-index": 4,
+                    "title": "数值",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "precision": 2
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "fldSelect": {
+                    "type": "string",
+                    "name": "fldSelect",
+                    "x-designable-id": "cfun2pr8uji",
+                    "x-index": 5,
+                    "title": "下拉",
+                    "x-decorator": "FormItem",
+                    "x-component": "Select",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "enum": [
+                      {
+                        "label": "选项A",
+                        "value": "A"
+                      },
+                      {
+                        "label": "选项B",
+                        "value": "B"
+                      }
+                    ]
+                  },
+                  "fldSwitch": {
+                    "type": "boolean",
+                    "name": "fldSwitch",
+                    "x-designable-id": "wf0y4e8b2fi",
+                    "x-index": 6,
+                    "title": "开关",
+                    "x-decorator": "FormItem",
+                    "x-component": "Switch",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldSlider": {
+                    "type": "number",
+                    "name": "fldSlider",
+                    "x-designable-id": "qfmvx8hvh9k",
+                    "x-index": 7,
+                    "title": "滑块",
+                    "x-decorator": "FormItem",
+                    "x-component": "Slider",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "min": 0,
+                      "max": 100
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "analysisDate": {
+                    "type": "string",
+                    "name": "analysisDate",
+                    "x-designable-id": "bvy2qpg8b4x",
+                    "x-index": 8,
+                    "title": "分析日期",
+                    "x-decorator": "FormItem",
+                    "x-component": "DatePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "dateRange": {
+                    "type": "array",
+                    "name": "dateRange",
+                    "x-designable-id": "gpe1tgr6a9x",
+                    "x-index": 9,
+                    "title": "日期范围",
+                    "x-decorator": "FormItem",
+                    "x-component": "DatePicker.RangePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldTime": {
+                    "type": "string",
+                    "name": "fldTime",
+                    "x-designable-id": "c131vk48etg",
+                    "x-index": 10,
+                    "title": "时间",
+                    "x-decorator": "FormItem",
+                    "x-component": "TimePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldTimeRange": {
+                    "type": "array",
+                    "name": "fldTimeRange",
+                    "x-designable-id": "9vb5sslwmg9",
+                    "x-index": 11,
+                    "title": "时间范围",
+                    "x-decorator": "FormItem",
+                    "x-component": "TimePicker.RangePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldRadio": {
+                    "type": "string",
+                    "name": "fldRadio",
+                    "x-designable-id": "zk0f0zxi3m5",
+                    "x-index": 12,
+                    "title": "单选",
+                    "x-decorator": "FormItem",
+                    "x-component": "Radio.Group",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "enum": [
+                      {
+                        "label": "选项A",
+                        "value": "A"
+                      },
+                      {
+                        "label": "选项B",
+                        "value": "B"
+                      }
+                    ]
+                  },
+                  "fldCheckbox": {
+                    "type": "array",
+                    "name": "fldCheckbox",
+                    "x-designable-id": "xg8vbytft1j",
+                    "x-index": 13,
+                    "title": "多选",
+                    "x-decorator": "FormItem",
+                    "x-component": "Checkbox.Group",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "enum": [
+                      {
+                        "label": "选项A",
+                        "value": "A"
+                      },
+                      {
+                        "label": "选项B",
+                        "value": "B"
+                      }
+                    ]
+                  },
+                  "fldTree": {
+                    "type": "string",
+                    "name": "fldTree",
+                    "x-designable-id": "ai1kpqkvua1",
+                    "x-index": 14,
+                    "title": "树选择",
+                    "x-decorator": "FormItem",
+                    "x-component": "TreeSelect",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "treeData": [
+                        {
+                          "title": "节点1",
+                          "value": "1"
+                        }
+                      ]
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "fldCascader": {
+                    "type": "array",
+                    "name": "fldCascader",
+                    "x-designable-id": "4pbgfuzu6ob",
+                    "x-index": 15,
+                    "title": "级联",
+                    "x-decorator": "FormItem",
+                    "x-component": "Cascader",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "options": [
+                        {
+                          "label": "省",
+                          "value": "p",
+                          "children": [
+                            {
+                              "label": "市",
+                              "value": "c"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "fldTransfer": {
+                    "type": "array",
+                    "name": "fldTransfer",
+                    "x-designable-id": "ka4ysd49l9g",
+                    "x-index": 16,
+                    "title": "穿梭框",
+                    "x-decorator": "FormItem",
+                    "x-component": "Transfer",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "dataSource": [
+                        {
+                          "key": "1",
+                          "title": "项1"
+                        },
+                        {
+                          "key": "2",
+                          "title": "项2"
+                        }
+                      ]
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "numA": {
+                    "type": "number",
+                    "name": "numA",
+                    "x-designable-id": "tkektkvbwk5",
+                    "x-index": 17,
+                    "title": "计算A",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "numB": {
+                    "type": "number",
+                    "name": "numB",
+                    "x-designable-id": "lk8c970lswc",
+                    "x-index": 18,
+                    "title": "计算B",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "calcResult": {
+                    "type": "number",
+                    "name": "calcResult",
+                    "x-designable-id": "38kbybsxgpb",
+                    "x-index": 19,
+                    "title": "计算结果",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "x-pattern": "disabled"
+                  }
+                }
+              },
+              "layoutCard": {
+                "type": "void",
+                "name": "layoutCard",
+                "x-designable-id": "etnsrcfsynb",
+                "x-index": 20,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "布局"
+                },
+                "properties": {
+                  "tabs1": {
+                    "type": "void",
+                    "name": "tabs1",
+                    "x-designable-id": "hkdssgx5054",
+                    "x-index": 21,
+                    "x-component": "Tabs",
+                    "x-component-props": {
+                      "title": "标签页"
+                    },
+                    "properties": {
+                      "tabPane1": {
+                        "type": "void",
+                        "name": "tabPane1",
+                        "x-designable-id": "usti6eckabk",
+                        "x-index": 22,
+                        "x-component": "Tabs.TabPane",
+                        "x-component-props": {
+                          "tab": "页一",
+                          "title": "页一"
+                        },
+                        "properties": {
+                          "tabInput1": {
+                            "type": "string",
+                            "name": "tabInput1",
+                            "x-designable-id": "2k5ss3jd3zf",
+                            "x-index": 24,
+                            "title": "页一输入",
+                            "x-decorator": "FormItem",
+                            "x-component": "Input",
+                            "x-validator": [],
+                            "x-component-props": {},
+                            "x-decorator-props": {}
+                          }
+                        }
+                      },
+                      "tabPane2": {
+                        "type": "void",
+                        "name": "tabPane2",
+                        "x-designable-id": "o30jivu7bv6",
+                        "x-index": 23,
+                        "x-component": "Tabs.TabPane",
+                        "x-component-props": {
+                          "tab": "页二",
+                          "title": "页二"
+                        },
+                        "properties": {
+                          "tabInput2": {
+                            "type": "string",
+                            "name": "tabInput2",
+                            "x-designable-id": "fbw6hoyvzzh",
+                            "x-index": 25,
+                            "title": "页二输入",
+                            "x-decorator": "FormItem",
+                            "x-component": "Input",
+                            "x-validator": [],
+                            "x-component-props": {},
+                            "x-decorator-props": {}
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "collapse1": {
+                    "type": "void",
+                    "name": "collapse1",
+                    "x-designable-id": "qn0l8geerzl",
+                    "x-index": 26,
+                    "x-component": "FormCollapse",
+                    "x-component-props": {
+                      "title": "折叠"
+                    },
+                    "properties": {
+                      "panel1": {
+                        "type": "void",
+                        "name": "panel1",
+                        "x-designable-id": "049y1eb93ka",
+                        "x-index": 27,
+                        "x-component": "FormCollapse.CollapsePanel",
+                        "x-component-props": {
+                          "header": "面板一",
+                          "title": "面板"
+                        },
+                        "properties": {
+                          "collapseText": {
+                            "type": "string",
+                            "name": "collapseText",
+                            "x-designable-id": "7jeod5pbwk0",
+                            "x-index": 28,
+                            "title": "折叠文本",
+                            "x-decorator": "FormItem",
+                            "x-component": "Input.TextArea",
+                            "x-validator": [],
+                            "x-component-props": {},
+                            "x-decorator-props": {}
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "space1": {
+                    "type": "void",
+                    "name": "space1",
+                    "x-designable-id": "so2dbunyqe6",
+                    "x-index": 29,
+                    "x-component": "Space",
+                    "x-component-props": {
+                      "title": "间距"
+                    },
+                    "properties": {
+                      "spaceIn1": {
+                        "type": "string",
+                        "name": "spaceIn1",
+                        "x-designable-id": "jm93pbm11yl",
+                        "x-index": 30,
+                        "title": "间距1",
+                        "x-decorator": "FormItem",
+                        "x-component": "Input",
+                        "x-validator": [],
+                        "x-component-props": {},
+                        "x-decorator-props": {}
+                      },
+                      "spaceIn2": {
+                        "type": "string",
+                        "name": "spaceIn2",
+                        "x-designable-id": "5ix4l1g8yvw",
+                        "x-index": 31,
+                        "title": "间距2",
+                        "x-decorator": "FormItem",
+                        "x-component": "Input",
+                        "x-validator": [],
+                        "x-component-props": {},
+                        "x-decorator-props": {}
+                      }
+                    }
+                  },
+                  "formLayout1": {
+                    "type": "void",
+                    "name": "formLayout1",
+                    "x-designable-id": "a94txmspwcr",
+                    "x-index": 32,
+                    "x-component": "FormLayout",
+                    "x-component-props": {
+                      "labelCol": 4,
+                      "wrapperCol": 20,
+                      "title": "表单布局"
+                    },
+                    "properties": {
+                      "layoutInput": {
+                        "type": "string",
+                        "name": "layoutInput",
+                        "x-designable-id": "x0tb67ig98j",
+                        "x-index": 33,
+                        "title": "布局输入",
+                        "x-decorator": "FormItem",
+                        "x-component": "Input",
+                        "x-validator": [],
+                        "x-component-props": {},
+                        "x-decorator-props": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "tableCard": {
+                "type": "void",
+                "name": "tableCard",
+                "x-designable-id": "fhoqco6lkr3",
+                "x-index": 34,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "矩阵"
+                },
+                "properties": {
+                  "innerTable": {
+                    "type": "void",
+                    "name": "innerTable",
+                    "x-designable-id": "9r914yl0fbn",
+                    "x-index": 35,
+                    "x-component": "Table",
+                    "x-component-props": {
+                      "title": "矩阵表"
+                    },
+                    "properties": {
+                      "tableRow1": {
+                        "type": "void",
+                        "name": "tableRow1",
+                        "x-designable-id": "b863uifvujp",
+                        "x-index": 36,
+                        "x-component": "TableRow",
+                        "x-component-props": {
+                          "title": "行1"
+                        },
+                        "properties": {
+                          "tableCell1": {
+                            "type": "void",
+                            "name": "tableCell1",
+                            "x-designable-id": "394q54ao34s",
+                            "x-index": 37,
+                            "x-component": "TableCell",
+                            "x-component-props": {
+                              "title": "单元格"
+                            },
+                            "properties": {
+                              "matrixVal": {
+                                "type": "number",
+                                "name": "matrixVal",
+                                "x-designable-id": "4k0s0z0dl9u",
+                                "x-index": 38,
+                                "title": "矩阵值",
+                                "x-decorator": "FormItem",
+                                "x-component": "NumberPicker",
+                                "x-validator": [],
+                                "x-component-props": {},
+                                "x-decorator-props": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "arrayCard": {
+                "type": "void",
+                "name": "arrayCard",
+                "x-designable-id": "tijx13lywsp",
+                "x-index": 39,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "自增"
+                },
+                "properties": {
+                  "arrayTable1": {
+                    "type": "array",
+                    "title": "自增表格",
+                    "name": "arrayTable1",
+                    "x-decorator": "FormItem",
+                    "x-component": "ArrayTable",
+                    "x-decorator-props": {
+                      "layout": "vertical"
+                    },
+                    "x-component-props": {},
+                    "x-designable-id": "ef9sbvyv4fd",
+                    "x-index": 99,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "arrColData": {
+                          "type": "string",
+                          "name": "arrColData",
+                          "x-designable-id": "wvjxfuug8ww",
+                          "x-index": 41,
+                          "title": "数据列",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayTable.Column",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "加水量",
+                            "align": "center"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "water": {
+                              "type": "number",
+                              "name": "water",
+                              "x-designable-id": "xy2elhw8054",
+                              "x-index": 40,
+                              "title": "加水量",
+                              "x-decorator": "FormItem",
+                              "x-component": "NumberPicker",
+                              "x-validator": [],
+                              "x-component-props": {
+                                "precision": 1
+                              },
+                              "x-decorator-props": {}
+                            }
+                          }
+                        },
+                        "arrColOps": {
+                          "type": "string",
+                          "name": "arrColOps",
+                          "x-designable-id": "5ibxx0vnvkv",
+                          "x-index": 45,
+                          "title": "操作列",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayTable.Column",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "操作",
+                            "align": "center"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "removeBtn": {
+                              "type": "void",
+                              "name": "removeBtn",
+                              "x-designable-id": "c0udazs8g0b",
+                              "x-index": 42,
+                              "x-component": "ArrayTable.Remove",
+                              "x-component-props": {
+                                "title": "删除"
+                              }
+                            },
+                            "moveDownBtn": {
+                              "type": "void",
+                              "name": "moveDownBtn",
+                              "x-designable-id": "9cqyrp1006p",
+                              "x-index": 43,
+                              "x-component": "ArrayTable.MoveDown",
+                              "x-component-props": {
+                                "title": "下移"
+                              }
+                            },
+                            "moveUpBtn": {
+                              "type": "void",
+                              "name": "moveUpBtn",
+                              "x-designable-id": "o9ofhpy2rst",
+                              "x-index": 44,
+                              "x-component": "ArrayTable.MoveUp",
+                              "x-component-props": {
+                                "title": "上移"
+                              }
+                            }
+                          }
+                        },
+                        "arrColIdx": {
+                          "type": "string",
+                          "name": "arrColIdx",
+                          "x-designable-id": "y0rxc1kam4v",
+                          "x-index": 47,
+                          "title": "索引列",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayTable.Column",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "序号",
+                            "align": "center"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "index": {
+                              "type": "void",
+                              "name": "arrIndex",
+                              "x-designable-id": "mvtexd2holx",
+                              "x-index": 46,
+                              "x-component": "ArrayTable.Index",
+                              "x-component-props": {
+                                "title": "序号"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "properties": {
+                      "addBtn": {
+                        "type": "void",
+                        "name": "addBtn",
+                        "x-designable-id": "bfpzoa4wv15",
+                        "x-index": 48,
+                        "x-component": "ArrayTable.Addition",
+                        "x-component-props": {
+                          "title": "添加"
+                        }
+                      }
+                    }
+                  },
+                  "arrayFixTable1": {
+                    "type": "array",
+                    "title": "固定行表格",
+                    "name": "arrayFixTable1",
+                    "x-decorator": "FormItem",
+                    "x-component": "ArrayFixTable",
+                    "x-component-props": {
+                      "num": 2
+                    },
+                    "x-designable-id": "ixcqz2ojraf",
+                    "x-index": 100,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "rowTitle": {
+                          "type": "void",
+                          "name": "rowTitle",
+                          "x-designable-id": "6mnyvrczjmg",
+                          "x-index": 49,
+                          "x-component": "ArrayFixTable.RowTitle",
+                          "x-component-props": {
+                            "titleList": "第1次\n第2次",
+                            "title": "行标题"
+                          }
+                        },
+                        "colV1": {
+                          "type": "void",
+                          "name": "colV1",
+                          "x-designable-id": "cqbd8ly2a2o",
+                          "x-index": 51,
+                          "x-component": "ArrayFixTable.Column",
+                          "x-component-props": {
+                            "title": "V1列",
+                            "align": "center"
+                          },
+                          "properties": {
+                            "v1": {
+                              "type": "number",
+                              "name": "v1",
+                              "x-designable-id": "6r1fir7fqw7",
+                              "x-index": 50,
+                              "title": "V1",
+                              "x-decorator": "FormItem",
+                              "x-component": "NumberPicker",
+                              "x-validator": [],
+                              "x-component-props": {
+                                "precision": 1
+                              },
+                              "x-decorator-props": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "arrayCards1": {
+                    "type": "array",
+                    "title": "自增卡片",
+                    "name": "arrayCards1",
+                    "x-decorator": "FormItem",
+                    "x-component": "ArrayCards",
+                    "x-component-props": {
+                      "title": "记录",
+                      "addText": "添加记录"
+                    },
+                    "x-designable-id": "5j5tz8vhl5j",
+                    "x-index": 101,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "array",
+                          "name": "cardItem",
+                          "x-designable-id": "0nms6885z2a",
+                          "x-index": 54,
+                          "title": "卡片项",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayCards",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "记录标题"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "index": {
+                              "type": "array",
+                              "name": "cardIndex",
+                              "x-designable-id": "bcap27a12gm",
+                              "x-index": 52,
+                              "title": "序号",
+                              "x-decorator": "FormItem",
+                              "x-component": "ArrayCards",
+                              "x-validator": [],
+                              "x-component-props": {},
+                              "x-decorator-props": {}
+                            },
+                            "cardField": {
+                              "type": "string",
+                              "name": "cardField",
+                              "x-designable-id": "ykd1a0794nv",
+                              "x-index": 53,
+                              "title": "卡片字段",
+                              "x-decorator": "FormItem",
+                              "x-component": "Input",
+                              "x-validator": [],
+                              "x-component-props": {},
+                              "x-decorator-props": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "properties": {
+                      "addBtn": {
+                        "type": "array",
+                        "name": "cardsAddBtn",
+                        "x-designable-id": "sfc2hfewquc",
+                        "x-index": 55,
+                        "title": "添加",
+                        "x-decorator": "FormItem",
+                        "x-component": "ArrayCards",
+                        "x-validator": [],
+                        "x-component-props": {
+                          "addText": "添加记录"
+                        },
+                        "x-decorator-props": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "displayCard": {
+                "type": "void",
+                "name": "displayCard",
+                "x-designable-id": "68xmk6yy6wa",
+                "x-index": 56,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "展示"
+                },
+                "properties": {
+                  "text1": {
+                    "type": "void",
+                    "name": "text1",
+                    "x-designable-id": "th95f3km1nm",
+                    "x-index": 57,
+                    "x-component": "Text",
+                    "x-component-props": {
+                      "content": "calcResult = numA + numB",
+                      "title": "文本"
+                    }
+                  },
+                  "fmtText1": {
+                    "type": "void",
+                    "name": "fmtText1",
+                    "x-designable-id": "wqs0aklb2ye",
+                    "x-index": 58,
+                    "x-component": "FormattedText",
+                    "x-component-props": {
+                      "content": "格式化文本",
+                      "title": "格式化"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-designable-id": "7rqikb0b850"
+      }
+    },
+    "tableTemplateJson": {
+      "rows": {
+        "0": {
+          "cells": {
+            "0": {
+              "text": "检测项目",
+              "style": 0
+            },
+            "1": {
+              "text": "检测值",
+              "style": 0
+            }
+          }
+        },
+        "1": {
+          "cells": {
+            "0": {
+              "text": "密度",
+              "style": 1
+            },
+            "1": {
+              "text": "",
+              "style": 1
+            }
+          }
+        }
+      },
+      "cols": {
+        "0": {
+          "width": 120
+        },
+        "1": {
+          "width": 100
+        }
+      },
+      "styles": [
+        {
+          "bold": true,
+          "bgColor": "#f0f0f0",
+          "align": "center"
+        },
+        {
+          "align": "left"
+        }
+      ],
+      "cellBindings": {
+        "B2": {
+          "fieldPath": "fldNumber",
+          "type": "formField"
+        }
+      }
+    },
+    "extra": {
+      "expressionItems": [
+        {
+          "id": 1787709084533,
+          "name": "expression_1787709084533",
+          "title": "加法计算",
+          "expression": "ROUNDING(A+B,2)",
+          "writeFormValue": "calcResult",
+          "variables": [
+            {
+              "name": "A",
+              "value": "numA",
+              "type": "number"
+            },
+            {
+              "name": "B",
+              "value": "numB",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "outputItems": [
+        {
+          "id": 1787709084534,
+          "name": "raw##全量组件测试-计算结果##calcResult"
+        }
+      ],
+      "detectionDateConfig": {
+        "missingPolicy": "warnOnly",
+        "outputFormat": "YYYY-MM-DD",
+        "items": [
+          {
+            "id": 1787709084535,
+            "title": "全量组件测试-分析日期",
+            "path": "analysisDate",
+            "component": "DatePicker",
+            "valueKind": "single"
+          },
+          {
+            "id": 1787709084536,
+            "title": "全量组件测试-日期范围",
+            "path": "dateRange",
+            "component": "DatePicker.RangePicker",
+            "valueKind": "range"
+          }
+        ]
+      }
+    }
+  },
+  "savedVersion": {
+    "formTemplateJson": {
+      "form": {
+        "labelCol": 6,
+        "wrapperCol": 12,
+        "labelWrap": true
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rootCard": {
+            "type": "void",
+            "name": "rootCard",
+            "x-designable-id": "ctwonl4wjvc",
+            "x-index": 0,
+            "x-component": "Card",
+            "x-component-props": {
+              "title": "全量组件测试"
+            },
+            "properties": {
+              "basicGrid": {
+                "type": "void",
+                "name": "basicGrid",
+                "x-designable-id": "wf2pw8s8tcs",
+                "x-index": 1,
+                "x-component": "FormGrid",
+                "x-component-props": {
+                  "minColumns": 2,
+                  "maxColumns": 2,
+                  "title": "基础字段"
+                },
+                "properties": {
+                  "fldInput": {
+                    "type": "string",
+                    "name": "fldInput",
+                    "x-designable-id": "9k92umc6jwu",
+                    "x-index": 2,
+                    "title": "文本输入",
+                    "x-decorator": "FormItem",
+                    "x-component": "Input",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldTextArea": {
+                    "type": "string",
+                    "name": "fldTextArea",
+                    "x-designable-id": "emmp6w4wdd1",
+                    "x-index": 3,
+                    "title": "多行文本",
+                    "x-decorator": "FormItem",
+                    "x-component": "Input.TextArea",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldNumber": {
+                    "type": "number",
+                    "name": "fldNumber",
+                    "x-designable-id": "rsgh5xoejb2",
+                    "x-index": 4,
+                    "title": "数值",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "precision": 2
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "fldSelect": {
+                    "type": "string",
+                    "name": "fldSelect",
+                    "x-designable-id": "cfun2pr8uji",
+                    "x-index": 5,
+                    "title": "下拉",
+                    "x-decorator": "FormItem",
+                    "x-component": "Select",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "enum": [
+                      {
+                        "label": "选项A",
+                        "value": "A"
+                      },
+                      {
+                        "label": "选项B",
+                        "value": "B"
+                      }
+                    ]
+                  },
+                  "fldSwitch": {
+                    "type": "boolean",
+                    "name": "fldSwitch",
+                    "x-designable-id": "wf0y4e8b2fi",
+                    "x-index": 6,
+                    "title": "开关",
+                    "x-decorator": "FormItem",
+                    "x-component": "Switch",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldSlider": {
+                    "type": "number",
+                    "name": "fldSlider",
+                    "x-designable-id": "qfmvx8hvh9k",
+                    "x-index": 7,
+                    "title": "滑块",
+                    "x-decorator": "FormItem",
+                    "x-component": "Slider",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "min": 0,
+                      "max": 100
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "analysisDate": {
+                    "type": "string",
+                    "name": "analysisDate",
+                    "x-designable-id": "bvy2qpg8b4x",
+                    "x-index": 8,
+                    "title": "分析日期",
+                    "x-decorator": "FormItem",
+                    "x-component": "DatePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "dateRange": {
+                    "type": "array",
+                    "name": "dateRange",
+                    "x-designable-id": "gpe1tgr6a9x",
+                    "x-index": 9,
+                    "title": "日期范围",
+                    "x-decorator": "FormItem",
+                    "x-component": "DatePicker.RangePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldTime": {
+                    "type": "string",
+                    "name": "fldTime",
+                    "x-designable-id": "c131vk48etg",
+                    "x-index": 10,
+                    "title": "时间",
+                    "x-decorator": "FormItem",
+                    "x-component": "TimePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldTimeRange": {
+                    "type": "array",
+                    "name": "fldTimeRange",
+                    "x-designable-id": "9vb5sslwmg9",
+                    "x-index": 11,
+                    "title": "时间范围",
+                    "x-decorator": "FormItem",
+                    "x-component": "TimePicker.RangePicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "fldRadio": {
+                    "type": "string",
+                    "name": "fldRadio",
+                    "x-designable-id": "zk0f0zxi3m5",
+                    "x-index": 12,
+                    "title": "单选",
+                    "x-decorator": "FormItem",
+                    "x-component": "Radio.Group",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "enum": [
+                      {
+                        "label": "选项A",
+                        "value": "A"
+                      },
+                      {
+                        "label": "选项B",
+                        "value": "B"
+                      }
+                    ]
+                  },
+                  "fldCheckbox": {
+                    "type": "array",
+                    "name": "fldCheckbox",
+                    "x-designable-id": "xg8vbytft1j",
+                    "x-index": 13,
+                    "title": "多选",
+                    "x-decorator": "FormItem",
+                    "x-component": "Checkbox.Group",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "enum": [
+                      {
+                        "label": "选项A",
+                        "value": "A"
+                      },
+                      {
+                        "label": "选项B",
+                        "value": "B"
+                      }
+                    ]
+                  },
+                  "fldTree": {
+                    "type": "string",
+                    "name": "fldTree",
+                    "x-designable-id": "ai1kpqkvua1",
+                    "x-index": 14,
+                    "title": "树选择",
+                    "x-decorator": "FormItem",
+                    "x-component": "TreeSelect",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "treeData": [
+                        {
+                          "title": "节点1",
+                          "value": "1"
+                        }
+                      ]
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "fldCascader": {
+                    "type": "array",
+                    "name": "fldCascader",
+                    "x-designable-id": "4pbgfuzu6ob",
+                    "x-index": 15,
+                    "title": "级联",
+                    "x-decorator": "FormItem",
+                    "x-component": "Cascader",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "options": [
+                        {
+                          "label": "省",
+                          "value": "p",
+                          "children": [
+                            {
+                              "label": "市",
+                              "value": "c"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "fldTransfer": {
+                    "type": "array",
+                    "name": "fldTransfer",
+                    "x-designable-id": "ka4ysd49l9g",
+                    "x-index": 16,
+                    "title": "穿梭框",
+                    "x-decorator": "FormItem",
+                    "x-component": "Transfer",
+                    "x-validator": [],
+                    "x-component-props": {
+                      "dataSource": [
+                        {
+                          "key": "1",
+                          "title": "项1"
+                        },
+                        {
+                          "key": "2",
+                          "title": "项2"
+                        }
+                      ]
+                    },
+                    "x-decorator-props": {}
+                  },
+                  "numA": {
+                    "type": "number",
+                    "name": "numA",
+                    "x-designable-id": "tkektkvbwk5",
+                    "x-index": 17,
+                    "title": "计算A",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "numB": {
+                    "type": "number",
+                    "name": "numB",
+                    "x-designable-id": "lk8c970lswc",
+                    "x-index": 18,
+                    "title": "计算B",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {}
+                  },
+                  "calcResult": {
+                    "type": "number",
+                    "name": "calcResult",
+                    "x-designable-id": "38kbybsxgpb",
+                    "x-index": 19,
+                    "title": "计算结果",
+                    "x-decorator": "FormItem",
+                    "x-component": "NumberPicker",
+                    "x-validator": [],
+                    "x-component-props": {},
+                    "x-decorator-props": {},
+                    "x-pattern": "disabled"
+                  }
+                }
+              },
+              "layoutCard": {
+                "type": "void",
+                "name": "layoutCard",
+                "x-designable-id": "etnsrcfsynb",
+                "x-index": 20,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "布局"
+                },
+                "properties": {
+                  "tabs1": {
+                    "type": "void",
+                    "name": "tabs1",
+                    "x-designable-id": "hkdssgx5054",
+                    "x-index": 21,
+                    "x-component": "Tabs",
+                    "x-component-props": {
+                      "title": "标签页"
+                    },
+                    "properties": {
+                      "tabPane1": {
+                        "type": "void",
+                        "name": "tabPane1",
+                        "x-designable-id": "usti6eckabk",
+                        "x-index": 22,
+                        "x-component": "Tabs.TabPane",
+                        "x-component-props": {
+                          "tab": "页一",
+                          "title": "页一"
+                        },
+                        "properties": {
+                          "tabInput1": {
+                            "type": "string",
+                            "name": "tabInput1",
+                            "x-designable-id": "2k5ss3jd3zf",
+                            "x-index": 24,
+                            "title": "页一输入",
+                            "x-decorator": "FormItem",
+                            "x-component": "Input",
+                            "x-validator": [],
+                            "x-component-props": {},
+                            "x-decorator-props": {}
+                          }
+                        }
+                      },
+                      "tabPane2": {
+                        "type": "void",
+                        "name": "tabPane2",
+                        "x-designable-id": "o30jivu7bv6",
+                        "x-index": 23,
+                        "x-component": "Tabs.TabPane",
+                        "x-component-props": {
+                          "tab": "页二",
+                          "title": "页二"
+                        },
+                        "properties": {
+                          "tabInput2": {
+                            "type": "string",
+                            "name": "tabInput2",
+                            "x-designable-id": "fbw6hoyvzzh",
+                            "x-index": 25,
+                            "title": "页二输入",
+                            "x-decorator": "FormItem",
+                            "x-component": "Input",
+                            "x-validator": [],
+                            "x-component-props": {},
+                            "x-decorator-props": {}
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "collapse1": {
+                    "type": "void",
+                    "name": "collapse1",
+                    "x-designable-id": "qn0l8geerzl",
+                    "x-index": 26,
+                    "x-component": "FormCollapse",
+                    "x-component-props": {
+                      "title": "折叠"
+                    },
+                    "properties": {
+                      "panel1": {
+                        "type": "void",
+                        "name": "panel1",
+                        "x-designable-id": "049y1eb93ka",
+                        "x-index": 27,
+                        "x-component": "FormCollapse.CollapsePanel",
+                        "x-component-props": {
+                          "header": "面板一",
+                          "title": "面板"
+                        },
+                        "properties": {
+                          "collapseText": {
+                            "type": "string",
+                            "name": "collapseText",
+                            "x-designable-id": "7jeod5pbwk0",
+                            "x-index": 28,
+                            "title": "折叠文本",
+                            "x-decorator": "FormItem",
+                            "x-component": "Input.TextArea",
+                            "x-validator": [],
+                            "x-component-props": {},
+                            "x-decorator-props": {}
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "space1": {
+                    "type": "void",
+                    "name": "space1",
+                    "x-designable-id": "so2dbunyqe6",
+                    "x-index": 29,
+                    "x-component": "Space",
+                    "x-component-props": {
+                      "title": "间距"
+                    },
+                    "properties": {
+                      "spaceIn1": {
+                        "type": "string",
+                        "name": "spaceIn1",
+                        "x-designable-id": "jm93pbm11yl",
+                        "x-index": 30,
+                        "title": "间距1",
+                        "x-decorator": "FormItem",
+                        "x-component": "Input",
+                        "x-validator": [],
+                        "x-component-props": {},
+                        "x-decorator-props": {}
+                      },
+                      "spaceIn2": {
+                        "type": "string",
+                        "name": "spaceIn2",
+                        "x-designable-id": "5ix4l1g8yvw",
+                        "x-index": 31,
+                        "title": "间距2",
+                        "x-decorator": "FormItem",
+                        "x-component": "Input",
+                        "x-validator": [],
+                        "x-component-props": {},
+                        "x-decorator-props": {}
+                      }
+                    }
+                  },
+                  "formLayout1": {
+                    "type": "void",
+                    "name": "formLayout1",
+                    "x-designable-id": "a94txmspwcr",
+                    "x-index": 32,
+                    "x-component": "FormLayout",
+                    "x-component-props": {
+                      "labelCol": 4,
+                      "wrapperCol": 20,
+                      "title": "表单布局"
+                    },
+                    "properties": {
+                      "layoutInput": {
+                        "type": "string",
+                        "name": "layoutInput",
+                        "x-designable-id": "x0tb67ig98j",
+                        "x-index": 33,
+                        "title": "布局输入",
+                        "x-decorator": "FormItem",
+                        "x-component": "Input",
+                        "x-validator": [],
+                        "x-component-props": {},
+                        "x-decorator-props": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "tableCard": {
+                "type": "void",
+                "name": "tableCard",
+                "x-designable-id": "fhoqco6lkr3",
+                "x-index": 34,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "矩阵"
+                },
+                "properties": {
+                  "innerTable": {
+                    "type": "void",
+                    "name": "innerTable",
+                    "x-designable-id": "9r914yl0fbn",
+                    "x-index": 35,
+                    "x-component": "Table",
+                    "x-component-props": {
+                      "title": "矩阵表"
+                    },
+                    "properties": {
+                      "tableRow1": {
+                        "type": "void",
+                        "name": "tableRow1",
+                        "x-designable-id": "b863uifvujp",
+                        "x-index": 36,
+                        "x-component": "TableRow",
+                        "x-component-props": {
+                          "title": "行1"
+                        },
+                        "properties": {
+                          "tableCell1": {
+                            "type": "void",
+                            "name": "tableCell1",
+                            "x-designable-id": "394q54ao34s",
+                            "x-index": 37,
+                            "x-component": "TableCell",
+                            "x-component-props": {
+                              "title": "单元格"
+                            },
+                            "properties": {
+                              "matrixVal": {
+                                "type": "number",
+                                "name": "matrixVal",
+                                "x-designable-id": "4k0s0z0dl9u",
+                                "x-index": 38,
+                                "title": "矩阵值",
+                                "x-decorator": "FormItem",
+                                "x-component": "NumberPicker",
+                                "x-validator": [],
+                                "x-component-props": {},
+                                "x-decorator-props": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "arrayCard": {
+                "type": "void",
+                "name": "arrayCard",
+                "x-designable-id": "tijx13lywsp",
+                "x-index": 39,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "自增"
+                },
+                "properties": {
+                  "arrayTable1": {
+                    "type": "array",
+                    "title": "自增表格",
+                    "name": "arrayTable1",
+                    "x-decorator": "FormItem",
+                    "x-component": "ArrayTable",
+                    "x-decorator-props": {
+                      "layout": "vertical"
+                    },
+                    "x-component-props": {},
+                    "x-designable-id": "ef9sbvyv4fd",
+                    "x-index": 99,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "arrColData": {
+                          "type": "string",
+                          "name": "arrColData",
+                          "x-designable-id": "wvjxfuug8ww",
+                          "x-index": 41,
+                          "title": "数据列",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayTable.Column",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "加水量",
+                            "align": "center"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "water": {
+                              "type": "number",
+                              "name": "water",
+                              "x-designable-id": "xy2elhw8054",
+                              "x-index": 40,
+                              "title": "加水量",
+                              "x-decorator": "FormItem",
+                              "x-component": "NumberPicker",
+                              "x-validator": [],
+                              "x-component-props": {
+                                "precision": 1
+                              },
+                              "x-decorator-props": {}
+                            }
+                          }
+                        },
+                        "arrColOps": {
+                          "type": "string",
+                          "name": "arrColOps",
+                          "x-designable-id": "5ibxx0vnvkv",
+                          "x-index": 45,
+                          "title": "操作列",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayTable.Column",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "操作",
+                            "align": "center"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "removeBtn": {
+                              "type": "void",
+                              "name": "removeBtn",
+                              "x-designable-id": "c0udazs8g0b",
+                              "x-index": 42,
+                              "x-component": "ArrayTable.Remove",
+                              "x-component-props": {
+                                "title": "删除"
+                              }
+                            },
+                            "moveDownBtn": {
+                              "type": "void",
+                              "name": "moveDownBtn",
+                              "x-designable-id": "9cqyrp1006p",
+                              "x-index": 43,
+                              "x-component": "ArrayTable.MoveDown",
+                              "x-component-props": {
+                                "title": "下移"
+                              }
+                            },
+                            "moveUpBtn": {
+                              "type": "void",
+                              "name": "moveUpBtn",
+                              "x-designable-id": "o9ofhpy2rst",
+                              "x-index": 44,
+                              "x-component": "ArrayTable.MoveUp",
+                              "x-component-props": {
+                                "title": "上移"
+                              }
+                            }
+                          }
+                        },
+                        "arrColIdx": {
+                          "type": "string",
+                          "name": "arrColIdx",
+                          "x-designable-id": "y0rxc1kam4v",
+                          "x-index": 47,
+                          "title": "索引列",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayTable.Column",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "序号",
+                            "align": "center"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "index": {
+                              "type": "void",
+                              "name": "arrIndex",
+                              "x-designable-id": "mvtexd2holx",
+                              "x-index": 46,
+                              "x-component": "ArrayTable.Index",
+                              "x-component-props": {
+                                "title": "序号"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "properties": {
+                      "addBtn": {
+                        "type": "void",
+                        "name": "addBtn",
+                        "x-designable-id": "bfpzoa4wv15",
+                        "x-index": 48,
+                        "x-component": "ArrayTable.Addition",
+                        "x-component-props": {
+                          "title": "添加"
+                        }
+                      }
+                    }
+                  },
+                  "arrayFixTable1": {
+                    "type": "array",
+                    "title": "固定行表格",
+                    "name": "arrayFixTable1",
+                    "x-decorator": "FormItem",
+                    "x-component": "ArrayFixTable",
+                    "x-component-props": {
+                      "num": 2
+                    },
+                    "x-designable-id": "ixcqz2ojraf",
+                    "x-index": 100,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "rowTitle": {
+                          "type": "void",
+                          "name": "rowTitle",
+                          "x-designable-id": "6mnyvrczjmg",
+                          "x-index": 49,
+                          "x-component": "ArrayFixTable.RowTitle",
+                          "x-component-props": {
+                            "titleList": "第1次\n第2次",
+                            "title": "行标题"
+                          }
+                        },
+                        "colV1": {
+                          "type": "void",
+                          "name": "colV1",
+                          "x-designable-id": "cqbd8ly2a2o",
+                          "x-index": 51,
+                          "x-component": "ArrayFixTable.Column",
+                          "x-component-props": {
+                            "title": "V1列",
+                            "align": "center"
+                          },
+                          "properties": {
+                            "v1": {
+                              "type": "number",
+                              "name": "v1",
+                              "x-designable-id": "6r1fir7fqw7",
+                              "x-index": 50,
+                              "title": "V1",
+                              "x-decorator": "FormItem",
+                              "x-component": "NumberPicker",
+                              "x-validator": [],
+                              "x-component-props": {
+                                "precision": 1
+                              },
+                              "x-decorator-props": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "arrayCards1": {
+                    "type": "array",
+                    "title": "自增卡片",
+                    "name": "arrayCards1",
+                    "x-decorator": "FormItem",
+                    "x-component": "ArrayCards",
+                    "x-component-props": {
+                      "title": "记录",
+                      "addText": "添加记录"
+                    },
+                    "x-designable-id": "5j5tz8vhl5j",
+                    "x-index": 101,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "array",
+                          "name": "cardItem",
+                          "x-designable-id": "0nms6885z2a",
+                          "x-index": 54,
+                          "title": "卡片项",
+                          "x-decorator": "FormItem",
+                          "x-component": "ArrayCards",
+                          "x-validator": [],
+                          "x-component-props": {
+                            "title": "记录标题"
+                          },
+                          "x-decorator-props": {},
+                          "properties": {
+                            "index": {
+                              "type": "array",
+                              "name": "cardIndex",
+                              "x-designable-id": "bcap27a12gm",
+                              "x-index": 52,
+                              "title": "序号",
+                              "x-decorator": "FormItem",
+                              "x-component": "ArrayCards",
+                              "x-validator": [],
+                              "x-component-props": {},
+                              "x-decorator-props": {}
+                            },
+                            "cardField": {
+                              "type": "string",
+                              "name": "cardField",
+                              "x-designable-id": "ykd1a0794nv",
+                              "x-index": 53,
+                              "title": "卡片字段",
+                              "x-decorator": "FormItem",
+                              "x-component": "Input",
+                              "x-validator": [],
+                              "x-component-props": {},
+                              "x-decorator-props": {}
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "properties": {
+                      "addBtn": {
+                        "type": "array",
+                        "name": "cardsAddBtn",
+                        "x-designable-id": "sfc2hfewquc",
+                        "x-index": 55,
+                        "title": "添加",
+                        "x-decorator": "FormItem",
+                        "x-component": "ArrayCards",
+                        "x-validator": [],
+                        "x-component-props": {
+                          "addText": "添加记录"
+                        },
+                        "x-decorator-props": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "displayCard": {
+                "type": "void",
+                "name": "displayCard",
+                "x-designable-id": "68xmk6yy6wa",
+                "x-index": 56,
+                "x-component": "Card",
+                "x-component-props": {
+                  "title": "展示"
+                },
+                "properties": {
+                  "text1": {
+                    "type": "void",
+                    "name": "text1",
+                    "x-designable-id": "th95f3km1nm",
+                    "x-index": 57,
+                    "x-component": "Text",
+                    "x-component-props": {
+                      "content": "calcResult = numA + numB",
+                      "title": "文本"
+                    }
+                  },
+                  "fmtText1": {
+                    "type": "void",
+                    "name": "fmtText1",
+                    "x-designable-id": "wqs0aklb2ye",
+                    "x-index": 58,
+                    "x-component": "FormattedText",
+                    "x-component-props": {
+                      "content": "格式化文本",
+                      "title": "格式化"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-designable-id": "7rqikb0b850"
+      }
+    },
+    "tableTemplateJson": {
+      "rows": {
+        "0": {
+          "cells": {
+            "0": {
+              "text": "检测项目",
+              "style": 0
+            },
+            "1": {
+              "text": "检测值",
+              "style": 0
+            }
+          }
+        },
+        "1": {
+          "cells": {
+            "0": {
+              "text": "密度",
+              "style": 1
+            },
+            "1": {
+              "text": "",
+              "style": 1
+            }
+          }
+        }
+      },
+      "cols": {
+        "0": {
+          "width": 120
+        },
+        "1": {
+          "width": 100
+        }
+      },
+      "styles": [
+        {
+          "bold": true,
+          "bgColor": "#f0f0f0",
+          "align": "center"
+        },
+        {
+          "align": "left"
+        }
+      ],
+      "cellBindings": {
+        "B2": {
+          "fieldPath": "fldNumber",
+          "type": "formField"
+        }
+      }
+    },
+    "extra": {
+      "expressionItems": [
+        {
+          "id": 1787709084533,
+          "name": "expression_1787709084533",
+          "title": "加法计算",
+          "expression": "ROUNDING(A+B,2)",
+          "writeFormValue": "calcResult",
+          "variables": [
+            {
+              "name": "A",
+              "value": "numA",
+              "type": "number"
+            },
+            {
+              "name": "B",
+              "value": "numB",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "outputItems": [
+        {
+          "id": 1787709084534,
+          "name": "raw##全量组件测试-计算结果##calcResult"
+        }
+      ],
+      "detectionDateConfig": {
+        "missingPolicy": "warnOnly",
+        "outputFormat": "YYYY-MM-DD",
+        "items": [
+          {
+            "id": 1787709084535,
+            "title": "全量组件测试-分析日期",
+            "path": "analysisDate",
+            "component": "DatePicker",
+            "valueKind": "single"
+          },
+          {
+            "id": 1787709084536,
+            "title": "全量组件测试-日期范围",
+            "path": "dateRange",
+            "component": "DatePicker.RangePicker",
+            "valueKind": "range"
+          }
+        ]
+      }
+    }
+  }
+}

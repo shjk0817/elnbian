@@ -7,6 +7,8 @@ import { recorder } from './recorder/manager';
 import { setupRecorderClientHandlers } from './recorder/client-handlers';
 import { setupRecorderPortRelay } from './recorder/port-relay';
 import { setupMcpBridge } from './mcp/bridge';
+import { setupElnBridge } from './eln/bridge';
+import { seedElnBuiltinContent } from '@/lib/eln/seed-eln-builtin';
 import { seedDevStorage } from './providers/dev-seed';
 import { registerBackupHandler } from './chat/backup-handler';
 import { setupPageActions } from '@/lib/page-actions/manager';
@@ -193,6 +195,10 @@ export default defineBackground(() => {
   setupRecorderClientHandlers();
   setupMemoryClientHandlers();
   setupMcpBridge();
+  setupElnBridge();
+  void seedElnBuiltinContent().catch((err) =>
+    console.warn('[eln] seed builtin failed:', err),
+  );
   setupClientRouter();
 
   // 最后一步：所有 onPortConnect / onPortDisconnect 订阅者都已注册，现在才开始受理

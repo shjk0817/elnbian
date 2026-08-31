@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { Blocks, Download, FolderDown, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -42,6 +42,13 @@ export function SkillsSection() {
   const navigate = useNavigate();
   const workspaceRef = useRef<FileWorkspaceHandle>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 打开技能页时确保内置 eln-form-design（含 references）已种子写入 VFS
+  useEffect(() => {
+    void chrome.runtime.sendMessage({ type: 'eln_seed_builtin' }).then(() => {
+      workspaceRef.current?.refresh();
+    });
+  }, []);
 
   const splat = params['*'] ?? '';
   const relativePath = splat || undefined;

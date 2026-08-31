@@ -109,6 +109,57 @@ export const mcpServers = storage.defineItem<MCPServerConfig[]>(
   { fallback: [] },
 );
 
+// ─── ELN 认证缓存 ───
+
+/** ELN 连接状态与 token 缓存（token 仅存扩展本地，不进入对话上下文） */
+export interface ElnAuthCache {
+  status: 'unknown' | 'connected' | 'no_token' | 'invalid';
+  lastCheckedAt: number | null;
+  tokenPreview: string | null;
+  cachedToken: string | null;
+}
+
+export const elnAuthCache = storage.defineItem<ElnAuthCache>(
+  'local:elnAuthCache',
+  {
+    fallback: {
+      status: 'unknown',
+      lastCheckedAt: null,
+      tokenPreview: null,
+      cachedToken: null,
+    },
+  },
+);
+
+/** 内置 ELN Skill/提示词包版本，用于增量升级 references 与 SKILL.md */
+export const elnBuiltinBundleVersion = storage.defineItem<number>(
+  'local:elnBuiltinBundleVersion',
+  { fallback: 0 },
+);
+
+/** MinerU 文档解析 API 配置 */
+export interface MineruSettings {
+  apiToken: string;
+  /** 本地解析失败时自动走 MinerU */
+  fallbackEnabled: boolean;
+  /** 跳过本地，优先 MinerU */
+  preferMineru: boolean;
+  /** 有 Token 时优先走 v4 精准 API */
+  preferV4: boolean;
+}
+
+export const mineruSettings = storage.defineItem<MineruSettings>(
+  'local:mineruSettings',
+  {
+    fallback: {
+      apiToken: '',
+      fallbackEnabled: true,
+      preferMineru: false,
+      preferV4: true,
+    },
+  },
+);
+
 // ─── Thinking level ───
 
 export type { ThinkingLevel };

@@ -29,7 +29,14 @@ const EXEMPT_FILE_REGEXES = [
   /[\\/]design[\\/]/,
   // 单元测试的 describe/it 标题不是用户可见文案，允许中文。
   /\.test\.tsx?$/,
-  // i18n wrapper itself contains comments, but no zh strings.
+  // ELN 工具描述、错误信息与 AI 提示词为中文（面向内网检测场景）。
+  /[\\/]lib[\\/]eln[\\/]/,
+  /[\\/]lib[\\/]mineru[\\/]/,
+  /[\\/]lib[\\/]tools[\\/]eln[\\/]/,
+  /[\\/]lib[\\/]content[\\/]parse-uploaded-document\.ts$/,
+  /[\\/]entrypoints[\\/]offscreen[\\/](document-parse|docx|xlsx)\.ts$/,
+  /[\\/]components[\\/]chat[\\/]WelcomeScreen\.tsx$/,
+  /[\\/]lib[\\/]agent[\\/]attachments\.ts$/,
 ];
 
 const CJK_RE = /[\u4e00-\u9fa5]/;
@@ -41,6 +48,7 @@ const ALLOWED_TOP_KEYS = new Set([
   'extName', 'extDescription', 'actionTitle',
   // Namespaces.
   'common', 'chat', 'settings', 'provider', 'tools', 'vfs', 'permission', 'dialogs', 'errors', 'agent', 'pageActions',
+  'app', 'eln',
 ]);
 
 async function* walk(dir) {

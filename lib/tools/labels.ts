@@ -36,6 +36,10 @@ export function getToolLabel(name: string, args: Record<string, any> = {}): stri
   // we don't have the original server name (slug is lossy: lowercase + `_`),
   // so we surface the slug with underscores → spaces, which is good enough
   // for users who recognize their own server names.
+  if (name.startsWith('eln__')) {
+    const tool = name.slice(5);
+    return t('tools.elnCall', [tool]);
+  }
   if (name.startsWith('mcp__')) {
     const rest = name.slice(5); // strip "mcp__"
     const sep = rest.indexOf('__');

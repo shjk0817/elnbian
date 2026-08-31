@@ -9,6 +9,7 @@ import { PromptsSection } from '@/components/settings/sections/PromptsSection';
 import { SkillsSection } from '@/components/settings/sections/SkillsSection';
 import { MemorySection } from '@/components/settings/sections/MemorySection';
 import { MCPSection } from '@/components/settings/sections/MCPSection';
+import { ElnSection } from '@/components/settings/sections/ElnSection';
 import { PageInteractionSection } from '@/components/settings/sections/PageInteractionSection';
 import { BackupSection } from '@/components/settings/sections/BackupSection';
 import { StorageSection } from '@/components/settings/sections/StorageSection';
@@ -41,6 +42,7 @@ export function SettingsRoutes({ basePath, showBackButton = false, showOpenInTab
       <Route element={<SettingsLayout basePath={basePath} showBackButton={showBackButton} showOpenInTab={showOpenInTab} onBack={onBack} />}>
         <Route index element={<SettingsIndexRedirect />} />
         <Route path="providers" element={<ProvidersSection />} />
+        <Route path="eln" element={<ElnSection />} />
         <Route path="instructions" element={<InstructionsSection />} />
         <Route path="prompts/*" element={<PromptsSection />} />
         <Route path="skills/*" element={<SkillsSection />} />

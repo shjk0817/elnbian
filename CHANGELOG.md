@@ -18,6 +18,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.0.0 - 2026-08-31
+
+建科 ELN 助手首个发布版本（基于 Cebian 1.6.0 二次开发）。
+
+### 新增 / Added
+
+- 品牌与界面：扩展名「建科ELN助手」、定制图标、ELN 连接状态指示
+- 内置 66 个 `eln__*` 工具（64 业务 + 认证），8 个危险操作程序拦截
+- 内置 Skill `eln-form-design` 及完整参考文档（Wiki、API 样本、功能映射表）
+- 4 条 ELN 斜杠提示词：新建模板、编辑模板、模板统计、查询模板；欢迎页快捷卡片
+- 设置页「ELN 连接」：登录态同步、MinerU 文档解析配置
+- 文档上传：PDF / DOCX / XLSX 本地解析；可选 MinerU API 解析复杂 PDF
+- 对话输入框支持拖拽上传原始记录
+
+### 上游 / Upstream
+
+- 继承 Cebian 1.6.0：多模型、斜杠提示词标记、会话置顶归档、MCP、Skill、页面感知等能力
+
 ## 1.6.0 - 2026-08-31
 
 ### 新增 / Added

@@ -2,9 +2,21 @@
 # 修改时请同步 locales/en.yml 与 locales/zh_TW.yml。规范见 .claude/skills/i18n-naming/SKILL.md。
 
 # ─── Manifest（扁平顶层 key，见规范"Manifest localization"）───
-extName: "Cebian · 开源 AI 侧边栏智能体"
-extDescription: "浏览器侧边栏里的 AI 智能体，用你自己的 OpenAI / Anthropic / Google API Key，免订阅、无账号。读网页、拾取元素、装 MCP 工具、跑 Skill 工作流，数据全部本地存储。AGPL-3.0 开源。"
-actionTitle: "打开 Cebian 侧边栏"
+extName: "建科ELN助手"
+extDescription: "建科 ELN 模板编辑 AI 助手。浏览器侧边栏对话即可调用 66 个 ELN 工具编辑检测表单；在 ELN 网页登录后自动同步凭据，自备 AI API Key 即可使用。基于 Cebian 开源项目二次开发。"
+actionTitle: "打开建科ELN助手"
+
+# ─── 应用品牌 ───
+app:
+  brandName: "建科ELN助手"
+
+# ─── ELN 状态指示 ───
+eln:
+  indicator:
+    unknown: "ELN：尚未检测连接"
+    connected: "ELN：已连接"
+    no_token: "ELN：未登录，点击前往连接设置"
+    invalid: "ELN：登录已失效，点击重新同步"
 
 # ─── 通用（UI 中复用）───
 common:
@@ -127,6 +139,7 @@ settings:
   nav:
     aria: "设置导航"
     providers: "AI 提供商"
+    eln: "ELN 连接"
     instructions: "指引"
     prompts: "提示词"
     skills: "技能"
@@ -147,7 +160,8 @@ settings:
     description: "按会话浏览 AI 生成的文件。浏览器是只读的，需要导出时用其中的下载按钮。"
   about:
     title: "关于"
-    tagline: "AI 浏览器侧边栏助手"
+    tagline: "建科 ELN 模板编辑 AI 助手"
+    forkNotice: "基于开源项目 Cebian（AGPL-3.0）二次开发"
     website: "官网"
     feedback: "反馈"
     checkUpdate: "检查更新"
@@ -316,6 +330,32 @@ settings:
       confirmOverwriteTitle: "覆盖现有技能？"
       # $1 = 技能名称（多个时以逗号分隔）
       confirmOverwriteDescription: "“$1” 将被替换，且已授予的权限将被清除。是否继续？"
+  eln:
+    title: "ELN 连接"
+    description: "连接建科 ELN 数据管理平台。在浏览器登录 ELN 后，扩展会自动读取登录态。"
+    server: "服务器：$1"
+    tokenPreview: "Token：$1"
+    openLogin: "打开 ELN 登录页"
+    sync: "同步登录态"
+    status:
+      unknown: "尚未检测"
+      connected: "已连接"
+      no_token: "未登录 — 请先在浏览器打开 ELN 并登录"
+      invalid: "登录已失效 — 请重新登录后同步"
+    howTo:
+      title: "使用步骤"
+      step1: "点击「打开 ELN 登录页」，在浏览器中登录你的账号"
+      step2: "登录成功后，点击「同步登录态」"
+      step3: "在侧边栏对话中即可使用 ELN 模板编辑工具"
+    mineru:
+      title: "文档解析（MinerU）"
+      description: "聊天上传 PDF/Word/Excel 等大文档时，本地解析失败或格式不支持可自动调用 MinerU API。在 mineru.net API 管理页创建 Token。"
+      tokenLabel: "API Token"
+      tokenPlaceholder: "Bearer 后的 Token 字符串"
+      fallback: "本地解析失败时自动走 MinerU"
+      preferMineru: "优先使用 MinerU（跳过本地解析）"
+      preferV4: "有 Token 时优先精准 API（最大 200MB）"
+      docsLink: "查看 MinerU API 文档"
   mcp:
     title: "MCP 服务器"
     description: "接入 Model Context Protocol 服务器，把它们的工具暴露给 agent 使用。"
@@ -513,6 +553,15 @@ chat:
     readFileFailed: "读取失败：$1"
     # $1 = 文件名
     unsupportedFileType: "不支持的文件类型：$1"
+    # $1 = 文件名
+    parsingDocument: "正在解析 $1…"
+    # $1 = 文件名, $2 = 错误信息
+    parseDocumentFailed: "文档解析失败：$1 — $2"
+    # $1 = 文件名, $2 = 大小限制
+    parseDocumentTruncated: "$1 内容较长，已截断至 $2"
+    dropFilesHint: "松开以添加附件"
+    # $1 = Prompt 名称
+    promptNotFound: "未找到 Prompt：$1（请打开设置 → 提示词确认已写入）"
     modelNoImage: "当前模型不支持多模态输入"
     imageStripped: "已移除图片附件——当前模型不支持多模态输入"
     noPrompts: "暂无 Prompt，前往 AI 配置创建"
@@ -652,6 +701,10 @@ chat:
     exampleExtractPrompt: "请从当前页面中提取关键信息（标题、要点、重要链接），整理成清单。"
     exampleTabsTitle: "整理我的标签页"
     exampleTabsPrompt: "请看看我当前打开了哪些标签页，按主题帮我归类，并指出可以关掉的重复页面。"
+    exampleElnCreateTitle: "ELN 新建模板"
+    exampleElnEditTitle: "ELN 编辑模板"
+    exampleElnStatsTitle: "ELN 模板统计"
+    exampleElnQueryTitle: "ELN 查询模板"
     scrollToBottom: "跳至最新消息"
 
 # ─── 提供商子组件（OAuth / API Key / 自定义）───
@@ -735,6 +788,7 @@ tools:
   runSkill: "正在执行技能脚本 $1"
   # $1 = MCP 服务器 slug（展示形式），$2 = 远端工具名
   mcpCall: "$1 · $2"
+  elnCall: "ELN · $1"
   fs:
     # $1 = 文件路径
     createFile: "正在创建文件 $1"

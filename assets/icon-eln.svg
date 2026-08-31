@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="ELN Assistant">
+  <defs>
+    <linearGradient id="bg" x1="20" y1="14" x2="108" y2="114" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFAB4D"/>
+      <stop offset="50%" stop-color="#F97316"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    <filter id="soft" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.4" flood-color="#7C2D12" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#bg)"/>
+  <g filter="url(#soft)" transform="translate(64 65) scale(0.9) translate(-64 -64)">
+    <!-- J (blue, from ELN favicon) -->
+    <path fill="#2F5DA8" d="M37 33h14v37c0 8.8 6.8 15.8 15.5 15.8H70v-12.5H63c-4.2 0-7.5-3.4-7.5-7.6V33z"/>
+    <!-- K spine -->
+    <path fill="#2F9E4F" d="M66 33h5.5v58H66z"/>
+    <!-- K upper blade -->
+    <path fill="#2F9E4F" d="M71.5 33h11l21 17.5L82.5 68H71.5l13-14.5V33z"/>
+    <!-- K middle blade -->
+    <path fill="#37B85A" d="M71.5 58.5h12l22 1.5-17 12.5H71.5l11.5-9.5V58.5z"/>
+    <!-- K lower blade -->
+    <path fill="#2F9E4F" d="M71.5 74h11l21 17L82.5 95H71.5l13-14V74z"/>
+  </g>
+</svg>

@@ -25,10 +25,17 @@ import { parseFrontmatter } from '@/lib/content/frontmatter';
 import { CEBIAN_PROMPTS_DIR } from '@/lib/persistence/vfs-paths';
 import {
   MAX_ATTACHMENT_COUNT, MAX_IMAGE_SIZE, MAX_TEXT_FILE_SIZE,
+  MAX_LOCAL_EXTRACTED_TEXT, MAX_MINERU_EXTRACTED_TEXT,
+  DOCUMENT_UPLOAD_ACCEPT, getMaxDocumentUploadSize,
   RECORDING_MIME,
-  isImageFile, isTextFile,
+  isImageFile, isTextFile, isUploadDocumentFile,
   type Attachment,
 } from '@/lib/agent/attachments';
+import {
+  formatExtractedDocumentContent,
+  parseUploadedDocument,
+} from '@/lib/content/parse-uploaded-document';
+import { mineruSettings } from '@/lib/persistence/storage';
 import { recordingToAttachment } from '@/lib/recorder/to-attachment';
 import { recorderChannel } from '@/lib/recorder/sidepanel-channel';
 import { useRecorder } from '@/hooks/useRecorder';
@@ -36,7 +43,7 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { appendTranscript, cleanTranscript } from '@/lib/speech/transcript';
 import { queryMicPermission, openMicPermissionPage, openSystemMicSettings } from '@/lib/speech/mic-permission';
 import { useMobileEmulation } from '@/hooks/useMobileEmulation';
-import { downloadFile, formatDuration, formatCompactCount, formatBytes } from '@/lib/utils';
+import { downloadFile, formatDuration, formatCompactCount, formatBytes, cn } from '@/lib/utils';
 import { t } from '@/lib/i18n';
 import type { PromptDispatchResult } from '@/hooks/useBackgroundAgent';
 
@@ -66,6 +73,8 @@ interface ChatInputProps {
  *  同时仍由 ChatInput 持有 value 状态。 */
 export interface ChatInputHandle {
   fill: (text: string) => void;
+  /** 按斜杠 Prompt 名称挂载内置模板（如 eln-新建模板） */
+  applySlashPrompt: (name: string) => Promise<void>;
 }
 
 export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput(
@@ -90,6 +99,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   const [prompts, setPrompts] = useState<PromptMeta[]>([]);
   const [selectedPromptIndex, setSelectedPromptIndex] = useState(0);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [dragOver, setDragOver] = useState(false);
   // Mirror of `attachments` for synchronous reads after an await. The
   // recorder's `subscribeSession` callback fires synchronously when the
   // BG delivers a session, but React state isn't flushed by the time
@@ -625,8 +635,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     focusCaretAtEnd();
   }, [focusCaretAtEnd]);
 
-  useImperativeHandle(ref, () => ({ fill }), [fill]);
-
   // Scan prompts when slash menu opens
   useEffect(() => {
     if (!showSlash) return;
@@ -704,6 +712,20 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     }
   };
 
+  /** 欢迎页等外部入口：按名称挂载斜杠 Prompt */
+  const applySlashPrompt = useCallback(async (name: string) => {
+    if (isDispatchingRef.current) return;
+    const prompts = await scanPrompts();
+    const prompt = prompts.find((p) => p.name === name);
+    if (!prompt) {
+      toast.error(t('chat.composer.promptNotFound', [name]));
+      return;
+    }
+    await handlePromptSelect(prompt);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ fill, applySlashPrompt }), [fill, applySlashPrompt]);
+
   const handlePickElement = async () => {
     if (isDispatchingRef.current) return;
     if (isPicking) {
@@ -778,6 +800,117 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     }
   };
 
+  /** 解析 Office/PDF 文档并作为文本附件挂到消息上 */
+  const processDocumentFile = useCallback(async (file: File) => {
+    const settings = await mineruSettings.getValue();
+    const maxSize = getMaxDocumentUploadSize(Boolean(settings.apiToken?.trim()));
+    if (file.size > maxSize) {
+      toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(maxSize)]));
+      return;
+    }
+    const toastId = toast.loading(t('chat.composer.parsingDocument', [file.name]));
+    try {
+      const parsed = await parseUploadedDocument(file);
+      if (isDispatchingRef.current) {
+        toast.dismiss(toastId);
+        return;
+      }
+      const content = formatExtractedDocumentContent(file.name, parsed);
+      setAttachments((prev) => {
+        if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+        return [...prev, {
+          type: 'file',
+          content,
+          name: file.name,
+          mimeType: 'text/plain',
+          size: file.size,
+        }];
+      });
+      toast.dismiss(toastId);
+      if (parsed.truncated) {
+        const limit = parsed.parser === 'local'
+          ? MAX_LOCAL_EXTRACTED_TEXT
+          : MAX_MINERU_EXTRACTED_TEXT;
+        toast.info(t('chat.composer.parseDocumentTruncated', [file.name, formatBytes(limit)]));
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(t('chat.composer.parseDocumentFailed', [file.name, msg]), { id: toastId });
+    }
+  }, []);
+
+  /** 处理单个上传文件（图片 / 文本 / 文档） */
+  const processUploadFile = useCallback((file: File) => {
+    if (isImageFile(file)) {
+      if (!supportsImage) {
+        toast.warning(t('chat.composer.modelNoImage'));
+        return;
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(MAX_IMAGE_SIZE)]));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (isDispatchingRef.current) return;
+        if (!supportsImageRef.current) return;
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',', 2)[1] ?? '';
+        const mimeType = file.type || 'image/png';
+        setAttachments((prev) => {
+          if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+          return [...prev, { type: 'image', source: 'upload', data: base64, mimeType, name: file.name }];
+        });
+      };
+      reader.onerror = () => toast.error(t('chat.composer.readFileFailed', [file.name]));
+      reader.readAsDataURL(file);
+      return;
+    }
+    if (isTextFile(file.name)) {
+      if (file.size > MAX_TEXT_FILE_SIZE) {
+        toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(MAX_TEXT_FILE_SIZE)]));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (isDispatchingRef.current) return;
+        setAttachments((prev) => {
+          if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+          return [...prev, {
+            type: 'file',
+            content: reader.result as string,
+            name: file.name,
+            mimeType: file.type || 'text/plain',
+            size: file.size,
+          }];
+        });
+      };
+      reader.onerror = () => toast.error(t('chat.composer.readFileFailed', [file.name]));
+      reader.readAsText(file);
+      return;
+    }
+    if (isUploadDocumentFile(file.name)) {
+      void processDocumentFile(file);
+      return;
+    }
+    toast.error(t('chat.composer.unsupportedFileType', [file.name]));
+  }, [processDocumentFile, supportsImage]);
+
+  /** 批量处理选中的文件 */
+  const processUploadFiles = useCallback((files: File[]) => {
+    if (isDispatchingRef.current || files.length === 0) return;
+    const remaining = MAX_ATTACHMENT_COUNT - attachmentsRef.current.length;
+    if (remaining <= 0) {
+      toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+      return;
+    }
+    const batch = files.slice(0, remaining);
+    if (files.length > remaining) {
+      toast.warning(t('chat.composer.truncatedFiles', [remaining]));
+    }
+    for (const file of batch) processUploadFile(file);
+  }, [processUploadFile]);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isDispatchingRef.current) {
       e.target.value = '';
@@ -785,66 +918,29 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     }
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
-    const remaining = MAX_ATTACHMENT_COUNT - attachments.length;
-    if (remaining <= 0) {
-      toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
-      e.target.value = '';
-      return;
-    }
-
-    const filesToProcess = Array.from(files).slice(0, remaining);
-    if (files.length > remaining) {
-      toast.warning(t('chat.composer.truncatedFiles', [remaining]));
-    }
-
-    for (const file of filesToProcess) {
-      if (isImageFile(file)) {
-        // 当前模型不支持多模态时，跳过图片文件（文本文件仍照常处理）。
-        if (!supportsImage) {
-          toast.warning(t('chat.composer.modelNoImage'));
-          continue;
-        }
-        if (file.size > MAX_IMAGE_SIZE) {
-          toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(MAX_IMAGE_SIZE)]));
-          continue;
-        }
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (isDispatchingRef.current) return;
-          if (!supportsImageRef.current) return;
-          const dataUrl = reader.result as string;
-          const base64 = dataUrl.split(',', 2)[1] ?? '';
-          const mimeType = file.type || 'image/png';
-          setAttachments((prev) => {
-            if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
-            return [...prev, { type: 'image', source: 'upload', data: base64, mimeType, name: file.name }];
-          });
-        };
-        reader.onerror = () => toast.error(t('chat.composer.readFileFailed', [file.name]));
-        reader.readAsDataURL(file);
-      } else if (isTextFile(file.name)) {
-        if (file.size > MAX_TEXT_FILE_SIZE) {
-          toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(MAX_TEXT_FILE_SIZE)]));
-          continue;
-        }
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (isDispatchingRef.current) return;
-          setAttachments((prev) => {
-            if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
-            return [...prev, { type: 'file', content: reader.result as string, name: file.name, mimeType: file.type || 'text/plain', size: file.size }];
-          });
-        };
-        reader.onerror = () => toast.error(t('chat.composer.readFileFailed', [file.name]));
-        reader.readAsText(file);
-      } else {
-        toast.error(t('chat.composer.unsupportedFileType', [file.name]));
-      }
-    }
-
-    // Reset input so the same file can be selected again
+    processUploadFiles(Array.from(files));
     e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDispatching) setDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    const related = e.relatedTarget as Node | null;
+    if (!related || !e.currentTarget.contains(related)) setDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    if (isDispatching) return;
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) processUploadFiles(files);
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -954,7 +1050,21 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
         </div>
       )}
 
-      <div className="border border-border rounded-xl bg-card focus-within:border-border/80 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+      <div
+        className={cn(
+          'border border-border rounded-xl bg-card focus-within:border-border/80 focus-within:ring-2 focus-within:ring-primary/10 transition-all relative',
+          dragOver && 'ring-2 ring-primary/30 border-primary/40',
+        )}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {dragOver && (
+          <div className="absolute inset-0 z-10 rounded-xl bg-primary/5 border-2 border-dashed border-primary/40 flex items-center justify-center pointer-events-none">
+            <p className="text-sm text-primary font-medium">{t('chat.composer.dropFilesHint')}</p>
+          </div>
+        )}
         {/* Top row: tools + attachments */}
         <div className="flex items-center gap-0.5 px-2.5 pt-2.5 pb-2">
           {/* Tool icons */}
@@ -997,7 +1107,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
             ref={fileInputRef}
             type="file"
             multiple
-            accept={`${supportsImage ? 'image/*,' : ''}.txt,.md,.csv,.tsv,.log,.js,.ts,.jsx,.tsx,.mjs,.cjs,.py,.java,.c,.cpp,.h,.hpp,.go,.rs,.rb,.php,.sh,.bash,.sql,.yaml,.yml,.toml,.ini,.cfg,.json,.xml,.html,.htm,.css,.scss,.less,.env,.gitignore,.editorconfig`}
+            accept={`${supportsImage ? 'image/*,' : ''}.txt,.md,.csv,.tsv,.log,.js,.ts,.jsx,.tsx,.mjs,.cjs,.py,.java,.c,.cpp,.h,.hpp,.go,.rs,.rb,.php,.sh,.bash,.sql,.yaml,.yml,.toml,.ini,.cfg,.json,.xml,.html,.htm,.css,.scss,.less,.env,.gitignore,.editorconfig,${DOCUMENT_UPLOAD_ACCEPT}`}
             className="hidden"
             disabled={isDispatching}
             onChange={handleFileUpload}

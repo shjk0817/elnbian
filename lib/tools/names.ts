@@ -44,3 +44,10 @@ export const TOOL_FS_SAVE_URL = 'fs_save_url' as const;
 export const TOOL_RUN_SKILL = 'run_skill' as const;
 /** Tool that calls Chrome browser APIs directly via structured parameters */
 export const TOOL_CHROME_API = 'chrome_api' as const;
+
+// ─── ELN 内置工具名 ───
+
+/** 检查 ELN 平台登录态 */
+export const TOOL_ELN_CHECK_AUTH = 'eln__check_auth' as const;
+/** 从 ELN 标签页同步 JWT */
+export const TOOL_ELN_SYNC_AUTH = 'eln__sync_auth' as const;

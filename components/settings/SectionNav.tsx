@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Key, MessageSquare, FileText, Blocks, Brain, Plug, Info, DatabaseBackup, HardDrive, Sliders, MousePointerClick } from 'lucide-react';
+import { Key, MessageSquare, FileText, Blocks, Brain, Plug, Info, DatabaseBackup, HardDrive, Sliders, MousePointerClick, FlaskConical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { t } from '@/lib/i18n';
 
@@ -17,6 +17,7 @@ export interface SectionNavItem {
 
 export const SETTINGS_SECTIONS: SectionNavItem[] = [
   { path: 'providers', getLabel: () => t('settings.nav.providers'), icon: Key },
+  { path: 'eln', getLabel: () => t('settings.nav.eln'), icon: FlaskConical },
   { path: 'instructions', getLabel: () => t('settings.nav.instructions'), icon: MessageSquare },
   { path: 'prompts', getLabel: () => t('settings.nav.prompts'), icon: FileText },
   { path: 'skills', getLabel: () => t('settings.nav.skills'), icon: Blocks },

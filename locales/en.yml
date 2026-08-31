@@ -3,9 +3,19 @@
 # See .claude/skills/i18n-naming/SKILL.md.
 
 # ─── Manifest (flat top-level keys, see skill "Manifest localization") ───
-extName: "Cebian · Open-Source AI Side Panel Agent"
-extDescription: "Side panel AI agent. BYO key (OpenAI/Anthropic/Google), no account. Element picker, MCP tools, skills. AGPL-3.0, local-first."
-actionTitle: "Open Cebian sidebar"
+extName: "Jianke ELN Assistant"
+extDescription: "AI assistant for Jianke ELN template design. 66 built-in ELN tools in the side panel; sign in to ELN in your browser to sync credentials. Bring your own AI API key. Forked from Cebian (AGPL-3.0)."
+actionTitle: "Open Jianke ELN Assistant"
+
+app:
+  brandName: "Jianke ELN Assistant"
+
+eln:
+  indicator:
+    unknown: "ELN: not checked yet"
+    connected: "ELN: connected"
+    no_token: "ELN: not signed in — click to open connection settings"
+    invalid: "ELN: session expired — click to sync again"
 
 # ─── Common (reused across the UI) ───
 common:
@@ -131,6 +141,7 @@ settings:
   nav:
     aria: "Settings navigation"
     providers: "AI providers"
+    eln: "ELN"
     instructions: "Instructions"
     prompts: "Prompts"
     skills: "Skills"
@@ -151,7 +162,8 @@ settings:
     description: "Browse files the AI created, organized by conversation. The browser is read-only — use the download button there to export."
   about:
     title: "About"
-    tagline: "AI browser sidebar assistant"
+    tagline: "Jianke ELN template design AI assistant"
+    forkNotice: "Forked from Cebian (AGPL-3.0)"
     website: "Website"
     feedback: "Feedback"
     checkUpdate: "Check for updates"
@@ -320,6 +332,32 @@ settings:
       confirmOverwriteTitle: "Overwrite existing skill?"
       # $1 = skill name(s), comma-separated
       confirmOverwriteDescription: "\"$1\" will be replaced and its saved permissions will be cleared. Continue?"
+  eln:
+    title: "ELN Connection"
+    description: "Connect to the Jianke ELN platform. Log in to ELN in your browser, then sync your session here."
+    server: "Server: $1"
+    tokenPreview: "Token: $1"
+    openLogin: "Open ELN login"
+    sync: "Sync login"
+    status:
+      unknown: "Not checked yet"
+      connected: "Connected"
+      no_token: "Not logged in — open ELN in your browser and sign in"
+      invalid: "Session expired — sign in again and sync"
+    howTo:
+      title: "How to use"
+      step1: "Click \"Open ELN login\" and sign in with your account"
+      step2: "After signing in, click \"Sync login\""
+      step3: "ELN template tools are available in the side panel chat"
+    mineru:
+      title: "Document parsing (MinerU)"
+      description: "When local parsing fails or the format is unsupported, call MinerU API for PDF/Word/Excel uploads. Create a token at mineru.net API management."
+      tokenLabel: "API Token"
+      tokenPlaceholder: "Token string (without Bearer)"
+      fallback: "Fall back to MinerU when local parsing fails"
+      preferMineru: "Prefer MinerU (skip local parsing)"
+      preferV4: "Prefer v4 API when token is set (up to 200MB)"
+      docsLink: "MinerU API docs"
   mcp:
     title: "MCP Servers"
     description: "Connect Model Context Protocol servers to expose their tools to the agent."
@@ -517,6 +555,11 @@ chat:
     readFileFailed: "Failed to read: $1"
     # $1 = file name
     unsupportedFileType: "Unsupported file type: $1"
+    parsingDocument: "Parsing $1…"
+    parseDocumentFailed: "Failed to parse document: $1 — $2"
+    parseDocumentTruncated: "$1 was truncated to $2"
+    dropFilesHint: "Drop to attach files"
+    promptNotFound: "Prompt not found: $1 (check Settings → Prompts)"
     modelNoImage: "Current model doesn't support multimodal input"
     imageStripped: "Removed image attachments — the current model doesn't support multimodal input"
     noPrompts: "No prompts yet — create one from AI config"
@@ -665,6 +708,10 @@ chat:
     exampleExtractPrompt: "Extract the key information from the current page (title, main points, important links) and organize it into a list."
     exampleTabsTitle: "Organize my tabs"
     exampleTabsPrompt: "Take a look at the tabs I currently have open, group them by topic, and point out any duplicate pages I can close."
+    exampleElnCreateTitle: "ELN: New template"
+    exampleElnEditTitle: "ELN: Edit template"
+    exampleElnStatsTitle: "ELN: Template stats"
+    exampleElnQueryTitle: "ELN: Find template"
     scrollToBottom: "Jump to latest"
 
 # ─── Provider sub-components (OAuth / API Key / custom) ───
@@ -748,6 +795,7 @@ tools:
   runSkill: "Running skill script $1"
   # $1 = MCP server slug (display form), $2 = remote tool name
   mcpCall: "$1 · $2"
+  elnCall: "ELN · $1"
   fs:
     # $1 = file path
     createFile: "Creating file $1"

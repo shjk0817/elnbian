@@ -390,7 +390,34 @@ export async function handlePdfText(
       `Page range "${pageRangeSpec}" matched no pages (document has ${doc.numPages} page(s)).`,
     );
   }
+  return extractTextForPages(doc, pages, maxChars);
+}
 
+/** 从上传字节解析 PDF 全文（不走 URL 缓存） */
+export async function handlePdfTextFromBytes(
+  data: ArrayBuffer,
+  maxChars: number | undefined,
+): Promise<PdfTextResult> {
+  const doc = await loadPdfFromBytes(data);
+  const pages = Array.from({ length: doc.numPages }, (_, i) => i + 1);
+  return extractTextForPages(doc, pages, maxChars);
+}
+
+async function loadPdfFromBytes(data: ArrayBuffer): Promise<PDFDocumentProxy> {
+  const pdfjs = await loadPdfJs();
+  const task = pdfjs.getDocument({
+    data: new Uint8Array(data),
+    disableFontFace: true,
+    verbosity: 0,
+  });
+  return task.promise;
+}
+
+async function extractTextForPages(
+  doc: PDFDocumentProxy,
+  pages: number[],
+  maxChars: number | undefined,
+): Promise<PdfTextResult> {
   const segments: string[] = [];
   const includedPages: number[] = [];
   let totalChars = 0;
@@ -398,15 +425,11 @@ export async function handlePdfText(
 
   for (const pageNumber of pages) {
     const pageText = await extractPageText(doc, pageNumber);
-    // Page boundary marker: form-feed + heading so it's both human- and
-    // regex-friendly. Doesn't count against `maxChars` budget tracking
-    // (kept simple — caller sees a coherent break either way).
     const segment = (segments.length > 0 ? '\n\f\n' : '')
       + `=== Page ${pageNumber} ===\n`
       + pageText;
 
     if (maxChars !== undefined && totalChars + segment.length > maxChars) {
-      // Slice the current segment to fit, then stop.
       const remaining = Math.max(0, maxChars - totalChars);
       if (remaining > 0) {
         segments.push(segment.slice(0, remaining));
@@ -422,13 +445,12 @@ export async function handlePdfText(
     totalChars += segment.length;
   }
 
-  const result: PdfTextResult = {
+  return {
     text: segments.join(''),
     pages: includedPages,
     requestedPages: pages.length,
     truncated,
   };
-  return result;
 }
 
 const SEARCH_SNIPPET_CONTEXT = 80;

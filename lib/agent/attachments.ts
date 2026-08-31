@@ -65,6 +65,16 @@ export const RECORDING_MIME = 'application/x-cebian-recording+json';
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;      // 5 MB
 export const MAX_TEXT_FILE_SIZE = 100 * 1024;         // 100 KB
+/** 上传的 PDF/DOCX 原始文件大小上限 */
+export const MAX_LOCAL_DOCUMENT_SIZE = 15 * 1024 * 1024; // 15 MB（本地解析）
+/** @deprecated 使用 MAX_LOCAL_DOCUMENT_SIZE */
+export const MAX_DOCUMENT_UPLOAD_SIZE = MAX_LOCAL_DOCUMENT_SIZE;
+/** 本地解析后注入 prompt 的文本上限 */
+export const MAX_LOCAL_EXTRACTED_TEXT = 400 * 1024;    // 400 KB
+/** MinerU 解析后允许更大的文本注入 */
+export const MAX_MINERU_EXTRACTED_TEXT = 1024 * 1024;  // 1 MB
+/** @deprecated 使用 MAX_LOCAL_EXTRACTED_TEXT */
+export const MAX_EXTRACTED_DOCUMENT_TEXT = MAX_LOCAL_EXTRACTED_TEXT;
 /** Cap recording JSON to keep prompt budget reasonable (~80k tokens worst case). */
 export const MAX_RECORDING_SIZE = 256 * 1024;         // 256 KB
 export const MAX_ATTACHMENT_COUNT = 10;
@@ -79,6 +89,19 @@ const TEXT_EXTENSIONS = new Set([
   '.env', '.gitignore', '.editorconfig',
 ]);
 
+/** 可通过解析为文本后上传的文档扩展名 */
+const DOCUMENT_EXTENSIONS = new Set([
+  '.pdf', '.docx', '.doc', '.xlsx', '.xls', '.ppt', '.pptx',
+]);
+
+/** `<input accept>` 附加的文档扩展名 */
+export const DOCUMENT_UPLOAD_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
+
+/** 根据是否配置 MinerU Token 返回上传大小上限 */
+export function getMaxDocumentUploadSize(hasMineruToken: boolean): number {
+  return hasMineruToken ? 200 * 1024 * 1024 : 15 * 1024 * 1024;
+}
+
 const IMAGE_MIME_TYPES = new Set([
   'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml',
 ]);
@@ -90,6 +113,11 @@ export function getFileExtension(name: string): string {
 
 export function isTextFile(name: string): boolean {
   return TEXT_EXTENSIONS.has(getFileExtension(name));
+}
+
+/** 是否为需解析的文档附件（PDF / Office 等） */
+export function isUploadDocumentFile(name: string): boolean {
+  return DOCUMENT_EXTENSIONS.has(getFileExtension(name));
 }
 
 export function isImageFile(file: File): boolean {

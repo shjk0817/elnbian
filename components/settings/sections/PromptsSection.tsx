@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { FileWorkspace } from './FileWorkspace';
 import { encodeRelPath } from '@/lib/persistence/vfs';
@@ -25,6 +25,11 @@ export function PromptsSection() {
   const { basePath, breakpoint } = useOutletContext<SettingsOutletContext>();
   const params = useParams();
   const navigate = useNavigate();
+
+  // 打开提示词页时确保内置 ELN 斜杠模板已种子写入
+  useEffect(() => {
+    void chrome.runtime.sendMessage({ type: 'eln_seed_builtin' });
+  }, []);
 
   // react-router v6 decodes splat params; fallback to '' means no file selected.
   const splat = params['*'] ?? '';

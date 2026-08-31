@@ -13,6 +13,10 @@ import {
   type PdfTextResult,
   type PdfSearchResult,
 } from './pdf';
+import {
+  handleDocumentParse,
+  type DocumentParseResult,
+} from './document-parse';
 
 // ─── Message types ───
 
@@ -36,6 +40,13 @@ export type OffscreenRequest =
       regex?: boolean;
       caseInsensitive?: boolean;
       maxHits?: number;
+    }
+  | {
+      type: 'document-parse';
+      fileName: string;
+      mimeType: string;
+      dataBase64: string;
+      maxChars?: number;
     };
 
 /** Response shape for the original handlers (html-to-markdown, crop-image)
@@ -57,6 +68,10 @@ export interface OffscreenPdfTextResponse {
 }
 export interface OffscreenPdfSearchResponse {
   result?: PdfSearchResult;
+  error?: string;
+}
+export interface OffscreenDocumentParseResponse {
+  result?: DocumentParseResult;
   error?: string;
 }
 
@@ -195,6 +210,14 @@ chrome.runtime.onMessage.addListener(
       })
         .then(result => sendResponse({ result } satisfies OffscreenPdfSearchResponse))
         .catch(err => sendResponse({ error: formatPdfError(err) } satisfies OffscreenPdfSearchResponse));
+      return true;
+    }
+    if (req.type === 'document-parse') {
+      handleDocumentParse(req.fileName, req.mimeType, req.dataBase64, req.maxChars)
+        .then(result => sendResponse({ result } satisfies OffscreenDocumentParseResponse))
+        .catch(err => sendResponse({
+          error: err instanceof Error ? err.message : String(err),
+        } satisfies OffscreenDocumentParseResponse));
       return true;
     }
 

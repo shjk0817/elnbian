@@ -22,6 +22,7 @@ import { SessionToolContext } from './session-context';
 import { TOOL_ASK_USER } from '@/lib/tools/names';
 import { getMCPManager } from '@/lib/mcp/manager';
 import { createMCPAgentTool } from './mcp-tool';
+import { createSessionElnTools } from './eln';
 
 /** Non-interactive tools shared by all sessions. `runSkillTool` is intentionally
  *  NOT here —— 每个 session 用 `createSessionRunSkillTool(sessionId)` 拿到
@@ -81,8 +82,9 @@ export async function buildSessionToolArray(
   ctx: SessionToolContext,
 ): Promise<AgentTool<any>[]> {
   const mcpTools = await discoverMCPTools();
+  const elnTools = createSessionElnTools(ctx.sessionId);
   const runSkill = createSessionRunSkillTool(ctx.sessionId);
-  return [...ctx.getInteractiveTools(), ...sharedTools, runSkill, ...mcpTools];
+  return [...ctx.getInteractiveTools(), ...sharedTools, runSkill, ...elnTools, ...mcpTools];
 }
 
 /**

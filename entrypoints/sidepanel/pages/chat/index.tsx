@@ -597,7 +597,13 @@ export function ChatPage({ onOpenSettings, onTitleChange }: { onOpenSettings?: (
           {!sessionLoading && messages.length === 0 && !isAgentRunning && (
             <WelcomeScreen
               hasModel={canStartChat}
-              onPickExample={(prompt) => inputRef.current?.fill(prompt)}
+              onPickExample={(ex) => {
+                if (ex.slashPromptName) {
+                  void inputRef.current?.applySlashPrompt(ex.slashPromptName);
+                } else if (ex.prompt) {
+                  inputRef.current?.fill(ex.prompt);
+                }
+              }}
               onOpenSettings={() => onOpenSettings?.()}
             />
           )}

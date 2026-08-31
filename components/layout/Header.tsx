@@ -5,6 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ElnConnectionIndicator } from '@/components/layout/ElnConnectionIndicator';
 import { t } from '@/lib/i18n';
 
 interface HeaderProps {
@@ -14,11 +15,21 @@ interface HeaderProps {
   theme: 'dark' | 'light' | 'system';
   onToggleTheme: () => void;
   onOpenSettings: () => void;
+  onOpenElnSettings: () => void;
   onNewChat: () => void;
   onOpenHistory: () => void;
 }
 
-export function Header({ title, isNewChat, theme, onToggleTheme, onOpenSettings, onNewChat, onOpenHistory }: HeaderProps) {
+export function Header({
+  title,
+  isNewChat,
+  theme,
+  onToggleTheme,
+  onOpenSettings,
+  onOpenElnSettings,
+  onNewChat,
+  onOpenHistory,
+}: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-5 py-4 border-b border-border bg-background/80 backdrop-blur-xl z-10">
       <div className="flex items-center gap-2">
@@ -41,8 +52,9 @@ export function Header({ title, isNewChat, theme, onToggleTheme, onOpenSettings,
         </Tooltip>
       </div>
 
-      <span className="flex-1 text-center text-sm font-medium truncate px-2">
-        {title || (isNewChat ? 'Cebian' : '')}
+      <span className="flex-1 text-center text-sm font-medium truncate px-2 flex items-center justify-center gap-2">
+        <span className="truncate">{title || (isNewChat ? t('app.brandName') : '')}</span>
+        <ElnConnectionIndicator onOpenElnSettings={onOpenElnSettings} />
       </span>
 
       <div className="flex gap-2">
