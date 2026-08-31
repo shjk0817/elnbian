@@ -1,43 +1,85 @@
 /**
- * AboutSection — version, update check, project links, and social media.
+ * AboutSection — 版本、更新检查、项目链接与维护者/原作者信息
  */
 import type { ReactElement, ReactNode, SVGProps } from 'react';
 import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { useUpdateCheck } from '@/hooks/useUpdateCheck';
 import { getInstallGuideUrl } from '@/lib/site-links';
+import {
+  CEBIAN_UPSTREAM_GITHUB_USERNAME,
+  CEBIAN_UPSTREAM_REPO,
+  ELNBIAN_GITHUB_AUTHOR,
+  ELNBIAN_GITHUB_RELEASES_PAGE,
+  ELNBIAN_GITHUB_REPO,
+  ELNBIAN_GITHUB_USERNAME,
+  githubAvatarUrl,
+} from '@/lib/eln/constants';
 
 type SocialKey = 'wechat' | 'bilibili' | 'xiaohongshu' | 'x';
 
+interface GitHubAuthorCard {
+  kind: 'github';
+  username: string;
+  href: string;
+  labelKey:
+    | 'settings.about.socials.maintainerGithub'
+    | 'settings.about.socials.upstreamGithub';
+  handleKey:
+    | 'settings.about.socials.maintainerGithubHandle'
+    | 'settings.about.socials.upstreamGithubHandle';
+}
+
 interface SocialLink {
+  kind: 'social';
   key: SocialKey;
-  /** Omitted for entries that should render as plain text (e.g. WeChat OA). */
   href?: string;
-  /** Brand accent color (hex). Used as a CSS variable on the card. */
   color: string;
   Icon: (props: SVGProps<SVGSVGElement>) => ReactElement;
 }
 
-const SOCIAL_LINKS: SocialLink[] = [
+const GITHUB_REPO_URL = `https://github.com/${ELNBIAN_GITHUB_REPO}`;
+
+const MAINTAINER: GitHubAuthorCard = {
+  kind: 'github',
+  username: ELNBIAN_GITHUB_USERNAME,
+  href: ELNBIAN_GITHUB_AUTHOR,
+  labelKey: 'settings.about.socials.maintainerGithub',
+  handleKey: 'settings.about.socials.maintainerGithubHandle',
+};
+
+const UPSTREAM_AUTHOR_GITHUB: GitHubAuthorCard = {
+  kind: 'github',
+  username: CEBIAN_UPSTREAM_GITHUB_USERNAME,
+  href: `https://github.com/${CEBIAN_UPSTREAM_GITHUB_USERNAME}`,
+  labelKey: 'settings.about.socials.upstreamGithub',
+  handleKey: 'settings.about.socials.upstreamGithubHandle',
+};
+
+const UPSTREAM_SOCIAL_LINKS: SocialLink[] = [
   {
+    kind: 'social',
     key: 'wechat',
     href: browser.runtime.getURL('/sponsor/wechat_channel.jpg' as never),
     color: '#07C160',
     Icon: WeChatIcon,
   },
   {
+    kind: 'social',
     key: 'bilibili',
     href: 'https://space.bilibili.com/12866223',
     color: '#00AEEC',
     Icon: BilibiliIcon,
   },
   {
+    kind: 'social',
     key: 'xiaohongshu',
     href: 'https://www.xiaohongshu.com/user/profile/5ce6085200000000050213a6',
     color: '#FF2442',
     Icon: XiaohongshuIcon,
   },
   {
+    kind: 'social',
     key: 'x',
     href: 'https://x.com/maotoumao0_0',
     color: 'currentColor',
@@ -58,18 +100,9 @@ export function AboutSection() {
         <p className="text-sm font-medium">{t('app.brandName')} v{current}</p>
         <p className="text-xs text-muted-foreground">{t('settings.about.tagline')}</p>
         <p className="text-xs text-muted-foreground">{t('settings.about.forkNotice')}</p>
-        <div className="flex gap-2 pt-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-x-2 gap-y-1 pt-2 text-xs text-muted-foreground">
           <a
-            href="https://cebian.catcat.work"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="underline underline-offset-2 hover:text-foreground transition-colors"
-          >
-            {t('settings.about.website')}
-          </a>
-          <span>·</span>
-          <a
-            href="https://github.com/maotoumao/Cebian"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noreferrer noopener"
             className="underline underline-offset-2 hover:text-foreground transition-colors"
@@ -78,7 +111,25 @@ export function AboutSection() {
           </a>
           <span>·</span>
           <a
-            href="https://github.com/maotoumao/Cebian/blob/HEAD/LICENSE"
+            href={ELNBIAN_GITHUB_RELEASES_PAGE}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="underline underline-offset-2 hover:text-foreground transition-colors"
+          >
+            Releases
+          </a>
+          <span>·</span>
+          <a
+            href={`${GITHUB_REPO_URL}/issues`}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="underline underline-offset-2 hover:text-foreground transition-colors"
+          >
+            {t('settings.about.feedback')}
+          </a>
+          <span>·</span>
+          <a
+            href={`${GITHUB_REPO_URL}/blob/master/LICENSE`}
             target="_blank"
             rel="noreferrer noopener"
             className="underline underline-offset-2 hover:text-foreground transition-colors"
@@ -87,36 +138,81 @@ export function AboutSection() {
           </a>
           <span>·</span>
           <a
-            href="https://github.com/maotoumao/Cebian/issues"
+            href={CEBIAN_UPSTREAM_REPO}
             target="_blank"
             rel="noreferrer noopener"
             className="underline underline-offset-2 hover:text-foreground transition-colors"
           >
-            {t('settings.about.feedback')}
+            {t('settings.about.upstream')}
           </a>
         </div>
       </div>
 
       <UpdateCheckRow status={status} onRecheck={recheck} />
 
-      <FollowAuthorSection />
+      <AuthorsSection />
     </div>
   );
 }
 
-function FollowAuthorSection() {
+function AuthorsSection() {
+  return (
+    <div className="space-y-5">
+      <AuthorGroup title={t('settings.about.maintainerTitle')}>
+        <GitHubAuthorCardView card={MAINTAINER} />
+      </AuthorGroup>
+      <AuthorGroup title={t('settings.about.originalAuthorTitle')}>
+        <GitHubAuthorCardView card={UPSTREAM_AUTHOR_GITHUB} />
+        <div className="grid grid-cols-2 gap-2">
+          {UPSTREAM_SOCIAL_LINKS.map((link) => (
+            <SocialCard key={link.key} link={link} />
+          ))}
+        </div>
+      </AuthorGroup>
+    </div>
+  );
+}
+
+function AuthorGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <p className="text-sm font-medium">{t('settings.about.followAuthor')}</p>
+        <p className="text-sm font-medium">{title}</p>
         <div className="h-px flex-1 bg-linear-to-r from-border to-transparent" />
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {SOCIAL_LINKS.map((link) => (
-          <SocialCard key={link.key} link={link} />
-        ))}
-      </div>
+      <div className="space-y-2 max-w-md">{children}</div>
     </div>
+  );
+}
+
+function GitHubAuthorCardView({ card }: { card: GitHubAuthorCard }) {
+  const label = t(card.labelKey);
+  const subtitle = t(card.handleKey);
+  const avatar = githubAvatarUrl(card.username);
+
+  return (
+    <a
+      href={card.href}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="
+        group flex items-center gap-3 rounded-lg border border-border bg-card/50 px-4 py-3
+        transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-sm
+      "
+    >
+      <img
+        src={avatar}
+        alt=""
+        width={40}
+        height={40}
+        className="size-10 shrink-0 rounded-full border border-border bg-muted object-cover"
+        loading="lazy"
+      />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-foreground">{label}</span>
+        <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>
+      </span>
+    </a>
   );
 }
 
@@ -223,8 +319,6 @@ function UpdateCheckRow({ status, onRecheck }: UpdateCheckRowProps) {
   );
 }
 
-// ─── Brand icons (inline SVG, simple-icons paths under CC0) ───
-
 function WeChatIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -242,7 +336,6 @@ function BilibiliIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 function XiaohongshuIcon(props: SVGProps<SVGSVGElement>) {
-  // Custom monogram — simple-icons doesn't ship a Xiaohongshu mark.
   return (
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
       <rect x="2" y="2" width="20" height="20" rx="5" fill="currentColor" />

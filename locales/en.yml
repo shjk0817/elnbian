@@ -164,6 +164,7 @@ settings:
     title: "About"
     tagline: "Jianke ELN template design AI assistant"
     forkNotice: "Forked from Cebian (AGPL-3.0)"
+    upstream: "Upstream Cebian"
     website: "Website"
     feedback: "Feedback"
     checkUpdate: "Check for updates"
@@ -171,10 +172,18 @@ settings:
     upToDate: "You are on the latest version"
     # $1 = new version string (e.g. "1.2.3")
     updateAvailable: "New version v$1 available"
-    viewInstallGuide: "View install guide"
+    viewInstallGuide: "Go to Releases"
     checkFailed: "Update check failed"
-    followAuthor: "Follow the author"
+    maintainerTitle: "Maintainer"
+    originalAuthorTitle: "Original author (Cebian)"
+    followAuthor: "Maintainer"
     socials:
+      maintainerGithub: "GitHub"
+      maintainerGithubHandle: "@shjk0817"
+      upstreamGithub: "GitHub"
+      upstreamGithubHandle: "@maotoumao"
+      github: "GitHub"
+      githubHandle: "@shjk0817"
       wechat: "WeChat Official Account"
       wechatHandle: "一只猫头猫"
       bilibili: "Bilibili"
@@ -529,6 +538,8 @@ settings:
 
 # ─── Chat surface ───
 chat:
+  agent:
+    name: "ELN Agent"
   composer:
     placeholder: "Type '/' for commands…"
     pickElement: "Pick element"

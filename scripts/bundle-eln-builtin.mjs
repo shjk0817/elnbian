@@ -14,7 +14,7 @@ const PROMPTS_ROOT = path.join(ROOT, 'bundled', 'eln-prompts');
 const OUT_FILE = path.join(ROOT, 'lib', 'eln', 'bundled', 'eln-builtin-files.ts');
 
 /** 内置包版本：增删改参考文档或提示词后递增，触发 Skill 增量升级 */
-const BUNDLE_VERSION = 3;
+const BUNDLE_VERSION = 5;
 
 /** 递归收集目录下所有文件 */
 function walkDir(dir, baseDir, kind, acc) {

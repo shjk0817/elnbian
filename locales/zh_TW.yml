@@ -160,6 +160,7 @@ settings:
     title: "關於"
     tagline: "建科 ELN 模板編輯 AI 助手"
     forkNotice: "基於開源專案 Cebian（AGPL-3.0）二次開發"
+    upstream: "上游 Cebian"
     website: "官方網站"
     feedback: "意見回饋"
     checkUpdate: "檢查更新"
@@ -167,10 +168,18 @@ settings:
     upToDate: "已是最新版本"
     # $1 = new version string (e.g. "1.2.3")
     updateAvailable: "發現新版本 v$1"
-    viewInstallGuide: "檢視安裝指南"
+    viewInstallGuide: "前往 Release 下載"
     checkFailed: "檢查更新失敗"
-    followAuthor: "關注作者"
+    maintainerTitle: "維護者"
+    originalAuthorTitle: "原作者（Cebian）"
+    followAuthor: "維護者"
     socials:
+      maintainerGithub: "GitHub"
+      maintainerGithubHandle: "@shjk0817"
+      upstreamGithub: "GitHub"
+      upstreamGithubHandle: "@maotoumao"
+      github: "GitHub"
+      githubHandle: "@shjk0817"
       wechat: "微信公眾號"
       wechatHandle: "一只猫头猫"
       bilibili: "嗶哩嗶哩"
@@ -525,6 +534,8 @@ settings:
 
 # ─── 聊天 ───
 chat:
+  agent:
+    name: "ELN Agent"
   composer:
     placeholder: "輸入 / 查看命令…"
     pickElement: "選擇元素"

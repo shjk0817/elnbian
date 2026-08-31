@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.0.1 - 2026-08-31
+
+### 新增 / Added
+
+- Skill `eln-form-design` 补充业务验收清单（Excel 格式）：组件还原、公式/输出值/判定公式；明确样品编号/名称/规格及检测人员/复核/审核无需搭建
+- 关于页：维护者 @shjk0817（GitHub 头像）与原作者 @maotoumao（GitHub 头像 + 社交链接）
+
+### 变更 / Changed
+
+- 对话助手显示名改为 **ELN Agent**
+- 检查更新与安装引导指向 `shjk0817/elnbian` GitHub Releases
+
 ## 1.0.0 - 2026-08-31
 
 建科 ELN 助手首个发布版本（基于 Cebian 1.6.0 二次开发）。

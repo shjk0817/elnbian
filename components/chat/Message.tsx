@@ -362,7 +362,7 @@ export function AgentMessage({
       {showHeader && (
         <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground font-medium">
           <Bot className="size-3.5 text-primary" />
-          Cebian Agent
+          {t('chat.agent.name')}
         </div>
       )}
       <div ref={contentRef} className="text-[0.9rem] leading-relaxed space-y-3">

@@ -1,15 +1,14 @@
 /**
- * useUpdateCheck — fetches the latest Cebian release from GitHub and compares
- * against the currently installed extension version.
+ * useUpdateCheck — 从 GitHub 拉取建科 ELN 助手最新 Release 并与当前扩展版本比对。
  *
- * Result is cached in localStorage for 6 hours to avoid hitting the API on
- * every About-page mount. Call `recheck()` to force-refresh.
+ * 结果缓存 6 小时；调用 `recheck()` 可强制刷新。
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ELNBIAN_GITHUB_RELEASES_LATEST_API } from '@/lib/eln/constants';
 
-const CACHE_KEY = 'cebian:updateCheck';
+const CACHE_KEY = 'elnbian:updateCheck';
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
-const RELEASES_URL = 'https://api.github.com/repos/maotoumao/Cebian/releases/latest';
+const RELEASES_URL = ELNBIAN_GITHUB_RELEASES_LATEST_API;
 
 export type UpdateStatus =
   | { kind: 'idle' }
