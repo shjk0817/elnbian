@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.2.0 - 2026-09-05
+
+### 文档 / Documentation
+
+- 重写 README：统一品牌为「建科助手」，补充 ELN / LIMIS / MCP 模块说明与安装指引
+- 新增 [`docs/TOOLS.md`](./docs/TOOLS.md)：浏览器、ELN、LIMIS 内置工具完整目录（`pnpm docs:tools` 可从源码生成）
+- 新增 `scripts/generate-tools-doc.mjs` 与 `docs:tools` 脚本
+
+### Documentation
+
+- README rewrite for 建科助手 branding; ELN, LIMIS, and MCP overview
+- Add `docs/TOOLS.md` tool catalog and `pnpm docs:tools` generator script
+
 ## 1.1.9 - 2026-09-05
 
 ### 新增 / Added

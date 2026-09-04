@@ -43,4 +43,5 @@ site/dist/
 site/mockup/
 
 # Private notes folder, never committed (root only — must NOT match site/src/content/docs/)
-/docs/
+/docs/*
+!/docs/TOOLS.md
