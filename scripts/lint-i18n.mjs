@@ -36,6 +36,7 @@ const EXEMPT_FILE_REGEXES = [
   /[\\/]lib[\\/]lims[\\/]/,
   /[\\/]lib[\\/]tools[\\/]lims[\\/]/,
   /[\\/]lib[\\/]providers[\\/]registry\.ts$/,
+  /[\\/]lib[\\/]providers[\\/]volc-ark\.ts$/,
   /[\\/]lib[\\/]content[\\/]parse-uploaded-document\.ts$/,
   /[\\/]entrypoints[\\/]offscreen[\\/](document-parse|docx|xlsx)\.ts$/,
   /[\\/]components[\\/]chat[\\/]WelcomeScreen\.tsx$/,

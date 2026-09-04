@@ -29,6 +29,8 @@ export interface ParsedUploadDocument {
   sourceKind: string;
   pageCount?: number;
   parser: DocumentParserChannel;
+  /** MinerU 是否命中本地 OCR 缓存 */
+  fromCache?: boolean;
 }
 
 /** 调用 offscreen 本地解析 */
@@ -66,7 +68,7 @@ export async function parseUploadedDocument(file: File): Promise<ParsedUploadDoc
   const localOk = isLocallyParsableExtension(ext) && file.size <= MAX_LOCAL_DOCUMENT_SIZE;
 
   const tryMineru = async (maxChars: number): Promise<ParsedUploadDocument> => {
-    const { text, channel } = await parseFileViaMineru(file, {
+    const { text, channel, fromCache } = await parseFileViaMineru(file, {
       apiToken: settings.apiToken,
       preferV4: settings.preferV4 || file.size > MAX_LOCAL_DOCUMENT_SIZE,
     });
@@ -76,6 +78,7 @@ export async function parseUploadedDocument(file: File): Promise<ParsedUploadDoc
       truncated: cut.truncated,
       sourceKind: ext.slice(1) || 'document',
       parser: channel,
+      fromCache,
     };
   };
 
@@ -107,7 +110,8 @@ export function formatExtractedDocumentContent(
   const via = parsed.parser === 'local'
     ? '本地解析'
     : parsed.parser === 'mineru-v4' ? 'MinerU 精准 API' : 'MinerU 轻量 API';
+  const cacheTag = parsed.fromCache ? ' · 缓存' : '';
   const pages = parsed.pageCount ? `，共 ${parsed.pageCount} 页` : '';
   const trunc = parsed.truncated ? '（内容较长，已截断）' : '';
-  return `[${via} · ${parsed.sourceKind}：${fileName}${pages}${trunc}]\n\n${parsed.text}`;
+  return `[${via}${cacheTag} · ${parsed.sourceKind}：${fileName}${pages}${trunc}]\n\n${parsed.text}`;
 }

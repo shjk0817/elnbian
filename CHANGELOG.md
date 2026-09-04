@@ -18,6 +18,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.1.9 - 2026-09-05
+
+### 新增 / Added
+
+- MinerU OCR 解析本地缓存：按文件 SHA-256 + 解析配置去重，重复上传同文件直接读缓存（最多保留 100 条）
+
+### 修复 / Fixed
+
+- 火山方舟 Coding Plan API Key 保存校验：不再要求模型回复 `ok`，任意非空响应即视为连通
+
+### Added
+
+- MinerU parse cache keyed by SHA-256 content hash and parse profile (IndexedDB, LRU cap 100)
+
+### Fixed
+
+- Volcengine Ark Coding Plan API key verification accepts any non-empty model reply
+
 ## 1.1.8 - 2026-09-05
 
 ### 修复 / Fixed

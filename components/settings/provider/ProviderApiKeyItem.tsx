@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { isCustomProvider } from "@/lib/providers/custom-models";
-import { getVolcArkModels, isVolcArkProvider } from "@/lib/providers/volc-ark";
+import { getVolcArkModels, isVolcArkProvider, verifyVolcArkApiKey } from "@/lib/providers/volc-ark";
 import { t } from "@/lib/i18n";
 import type { ApiKeyCredential } from "@/lib/persistence/storage";
 
@@ -66,6 +66,12 @@ export function ProviderApiKeyItem({
     setSaving(true);
 
     try {
+      if (isVolcArkProvider(provider)) {
+        await verifyVolcArkApiKey(provider, key.trim());
+        onSave({ authType: "apiKey", apiKey: key, verified: true });
+        return;
+      }
+
       const result = await complete(
         cheapestModel,
         {
@@ -87,8 +93,11 @@ export function ProviderApiKeyItem({
         .join("");
 
       if (!text.toLowerCase().includes("ok")) {
-        // 仅为进入 catch 走「失败也保存」分支；无具体原因，toast 只显示标题。
-        throw new Error();
+        throw new Error(
+          text
+            ? `Unexpected model reply (expected ok): ${text.slice(0, 120)}`
+            : 'Model returned an empty response',
+        );
       }
 
       onSave({ authType: "apiKey", apiKey: key, verified: true });

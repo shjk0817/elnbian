@@ -4,6 +4,12 @@
  */
 
 import { extractMarkdownFromZip } from '@/lib/mineru/zip-md';
+import {
+  mineruCacheProfile,
+  readMineruParseCache,
+  sha256HexOfFile,
+  writeMineruParseCache,
+} from '@/lib/mineru/cache';
 
 const AGENT_BASE = 'https://mineru.net/api/v1/agent';
 const V4_BASE = 'https://mineru.net/api/v4';
@@ -142,31 +148,53 @@ async function pollV4Batch(batchId: string, token: string): Promise<string> {
   throw new Error('MinerU 精准解析超时');
 }
 
-/** 按配置选择 MinerU 通道解析文件 */
+/** 按配置选择 MinerU 通道解析文件（含本地缓存） */
 export async function parseFileViaMineru(
   file: File,
   options: { apiToken?: string; preferV4?: boolean },
-): Promise<{ text: string; channel: 'mineru-agent' | 'mineru-v4' }> {
+): Promise<{ text: string; channel: 'mineru-agent' | 'mineru-v4'; fromCache: boolean }> {
   const token = options.apiToken?.trim();
   const canV4 = Boolean(token) && file.size <= MINERU_V4_MAX_BYTES;
   const canAgent = file.size <= MINERU_AGENT_MAX_BYTES;
+  const contentHash = await sha256HexOfFile(file);
+
+  const runChannel = async (
+    channel: 'mineru-agent' | 'mineru-v4',
+  ): Promise<{ text: string; channel: 'mineru-agent' | 'mineru-v4'; fromCache: boolean }> => {
+    const profile = mineruCacheProfile(channel, file);
+    const cached = await readMineruParseCache(contentHash, profile);
+    if (cached) return { text: cached, channel, fromCache: true };
+
+    const text = channel === 'mineru-v4'
+      ? await parseFileViaMineruV4(file, token!)
+      : await parseFileViaMineruAgent(file);
+    await writeMineruParseCache({
+      contentHash,
+      profile,
+      fileName: file.name,
+      fileSize: file.size,
+      channel,
+      markdown: text,
+    });
+    return { text, channel, fromCache: false };
+  };
 
   if (options.preferV4 && canV4) {
-    return { text: await parseFileViaMineruV4(file, token!), channel: 'mineru-v4' };
+    return runChannel('mineru-v4');
   }
   if (canV4 && !canAgent) {
-    return { text: await parseFileViaMineruV4(file, token!), channel: 'mineru-v4' };
+    return runChannel('mineru-v4');
   }
   if (canAgent) {
     try {
-      return { text: await parseFileViaMineruAgent(file), channel: 'mineru-agent' };
+      return await runChannel('mineru-agent');
     } catch (err) {
-      if (canV4) return { text: await parseFileViaMineruV4(file, token!), channel: 'mineru-v4' };
+      if (canV4) return runChannel('mineru-v4');
       throw err;
     }
   }
   if (canV4) {
-    return { text: await parseFileViaMineruV4(file, token!), channel: 'mineru-v4' };
+    return runChannel('mineru-v4');
   }
   throw new Error('文件过大，请配置 MinerU Token 后重试（精准 API 支持最大 200MB）');
 }

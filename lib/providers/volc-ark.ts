@@ -2,6 +2,7 @@
  * 火山方舟 Agent Plan / Coding Plan — OpenAI 兼容内置 provider
  */
 
+import { complete } from '@earendil-works/pi-ai/compat';
 import type { Api, Model } from '@earendil-works/pi-ai';
 
 /** Agent Plan provider id */
@@ -65,4 +66,27 @@ export function getVolcArkModels(provider: string): Model<Api>[] {
         : null;
   if (!baseUrl) return [];
   return SHARED_MODEL_IDS.map((id) => buildModel(provider, baseUrl, id));
+}
+
+/** 校验火山方舟 API Key（任意非空回复即视为连通） */
+export async function verifyVolcArkApiKey(provider: string, apiKey: string): Promise<void> {
+  const models = getVolcArkModels(provider);
+  const model = models.find((m) => m.id === 'deepseek-v3.2') ?? models[0];
+  if (!model) throw new Error('无可用校验模型');
+
+  const result = await complete(
+    model,
+    { messages: [{ role: 'user', content: 'Hi', timestamp: Date.now() }] },
+    { apiKey: apiKey.trim(), maxTokens: 16 },
+  );
+  if (result instanceof Error) throw result;
+
+  const text = result.content
+    .filter((b) => b.type === 'text')
+    .map((b) => ('text' in b ? b.text : ''))
+    .join('')
+    .trim();
+  if (!text) {
+    throw new Error('API 返回空响应，请检查 Key 是否有效、套餐是否开通');
+  }
 }
