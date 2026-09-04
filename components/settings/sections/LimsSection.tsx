@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, ExternalLink, CheckCircle2, AlertCircle, HelpCircle, Building2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useStorageItem } from '@/hooks/useStorageItem';
 import { limsAuthCache, limsSettings } from '@/lib/persistence/storage';
 import {
@@ -46,8 +47,17 @@ export function LimsSection() {
     void refresh();
   }, [refresh, settings.webOrigin]);
 
-  const syncAuth = () => {
-    void chrome.runtime.sendMessage({ type: 'lims_sync_auth' }).then(() => refresh());
+  const syncAuth = async () => {
+    try {
+      const res = await chrome.runtime.sendMessage({ type: 'lims_sync_auth' }) as
+        | { ok?: boolean; error?: string }
+        | undefined;
+      if (res?.ok === false && res.error) toast.error(res.error);
+    } catch (err) {
+      if (!String(err).includes('message channel closed')) {
+        toast.error(err instanceof Error ? err.message : String(err));
+      }
+    }
   };
 
   const openLims = () => {

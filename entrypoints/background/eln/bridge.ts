@@ -4,6 +4,7 @@
 
 import { getElnManager } from '@/lib/eln/manager';
 import { seedElnBuiltinContent } from '@/lib/eln/seed-eln-builtin';
+import { replyAsync } from '@/lib/shared/safe-message-response';
 
 export type ElnBridgeMessage =
   | { type: 'eln_refresh_status' }
@@ -15,18 +16,22 @@ export type ElnBridgeMessage =
 export function setupElnBridge(): void {
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg?.type === 'eln_seed_skill' || msg?.type === 'eln_seed_builtin') {
-      void seedElnBuiltinContent().then((result) =>
-        sendResponse({ seeded: result.skillUpdated, ...result }),
-      );
-      return true;
+      return replyAsync(sendResponse, async () => {
+        const result = await seedElnBuiltinContent();
+        return { seeded: result.skillUpdated, ...result };
+      });
     }
     if (msg?.type === 'eln_refresh_status') {
-      void getElnManager().refreshStatus().then((status) => sendResponse({ status }));
-      return true;
+      return replyAsync(sendResponse, async () => {
+        const status = await getElnManager().refreshStatus();
+        return { ok: true, status };
+      });
     }
     if (msg?.type === 'eln_open_login') {
-      void getElnManager().openLogin().then(() => sendResponse({ ok: true }));
-      return true;
+      return replyAsync(sendResponse, async () => {
+        await getElnManager().openLogin();
+        return { ok: true };
+      });
     }
     return false;
   });

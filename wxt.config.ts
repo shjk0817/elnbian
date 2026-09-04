@@ -43,6 +43,7 @@ export default defineConfig({
       'downloads', 'notifications',
       'clipboardRead',
       'declarativeNetRequest',
+      'declarativeNetRequestWithHostAccess',
     ],
     host_permissions: ['<all_urls>'],
     action: {

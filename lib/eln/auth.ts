@@ -3,15 +3,17 @@
  */
 
 import { elnAuthCache } from '@/lib/persistence/storage';
-import { ELN_API_BASE_URL, ELN_LOGIN_URL, ELN_TAB_URL_PATTERN, ELN_TOKEN_KEY } from './constants';
+import { ELN_API_BASE_URL, ELN_LOGIN_URL, ELN_TOKEN_KEY, ELN_WEB_ORIGIN } from './constants';
 import { ElnApiClient } from './client';
+import { findTabsForOrigin } from '@/lib/shared/match-origin-tabs';
 
 export type ElnAuthStatus = 'unknown' | 'connected' | 'no_token' | 'invalid';
 
-/** 从单个标签页读取 ELN localStorage 中的 token */
+/** 从单个标签页读取 ELN localStorage 中的 token（MAIN 世界，读取页面真实 storage） */
 async function readTokenFromTab(tabId: number): Promise<string | null> {
   const results = await chrome.scripting.executeScript({
     target: { tabId },
+    world: 'MAIN',
     func: (key: string) => localStorage.getItem(key),
     args: [ELN_TOKEN_KEY],
   });
@@ -21,7 +23,7 @@ async function readTokenFromTab(tabId: number): Promise<string | null> {
 
 /** 扫描所有 ELN 标签页，返回第一个有效 token */
 export async function readTokenFromElntabs(): Promise<string | null> {
-  const tabs = await chrome.tabs.query({ url: ELN_TAB_URL_PATTERN });
+  const tabs = await findTabsForOrigin(ELN_WEB_ORIGIN);
   for (const tab of tabs) {
     if (!tab.id) continue;
     try {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, ExternalLink, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { useStorageItem } from '@/hooks/useStorageItem';
 import { elnAuthCache, mineruSettings } from '@/lib/persistence/storage';
 import { ELN_WEB_ORIGIN } from '@/lib/eln/constants';
@@ -38,7 +39,10 @@ export function ElnSection() {
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await chrome.runtime.sendMessage({ type: 'eln_refresh_status' });
+      const res = await chrome.runtime.sendMessage({ type: 'eln_refresh_status' }) as
+        | { ok?: boolean; error?: string }
+        | undefined;
+      if (res?.ok === false && res.error) toast.error(res.error);
     } finally {
       setRefreshing(false);
     }

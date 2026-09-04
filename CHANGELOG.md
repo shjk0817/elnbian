@@ -18,6 +18,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.1.8 - 2026-09-05
+
+### 修复 / Fixed
+
+- LIMIS 登录态同步：按已打开标签页的 `cookieStoreId` 读取 Cookie，合并多 URL/domain 查询与 `document.cookie` 补充
+- ELN 同步：在 MAIN 世界读取 `localStorage`，按 hostname 匹配标签页
+- 设置页 `sendMessage` 异步回复未 catch 导致「message channel closed」
+- 扩展重载后内容脚本 `Extension context invalidated` 未捕获
+
+### Fixed
+
+- LIMIS auth sync: tab `cookieStoreId` cookie reads, multi-strategy merge, MAIN-world fallbacks
+- ELN sync: MAIN-world localStorage, hostname tab matching
+- Background message bridges always reply; no more channel-closed errors
+- Graceful handling when extension context is invalidated after reload
+
 ## 1.1.7 - 2026-09-05
 
 ### 新增 / Added

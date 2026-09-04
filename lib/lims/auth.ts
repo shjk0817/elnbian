@@ -6,50 +6,20 @@ import { limsAuthCache, limsSettings } from '@/lib/persistence/storage';
 import {
   LIMS_HOME_PATH,
   LIMS_LOGIN_PATH,
-  limsTabUrlPattern,
   resolveLimsWebOrigin,
-  LIMS_COOKIE_SESSION,
-  LIMS_COOKIE_USER_ID,
 } from './constants';
 import { LimisApiClient, LimisSessionError } from './client';
-import { LIMS_REFERER_UI } from './resolve-spec';
 import { parseLimsUserDisplayName } from './user-display';
+import { findTabsForOrigin } from '@/lib/shared/match-origin-tabs';
+import {
+  mergeLimsCookiePair,
+  readLimsCookiesFromBrowser,
+  readLimsCookiesFromTabDocument,
+} from './read-cookies';
 
 export type LimsAuthStatus = 'unknown' | 'connected' | 'no_cookies' | 'invalid';
 
 import type { LimsCookiePair } from './types';
-
-export async function readCookiesFromBrowser(origin: string): Promise<LimsCookiePair | null> {
-  const url = origin.replace(/\/$/, '');
-  const all = await chrome.cookies.getAll({ url });
-  const userId = all.find((c) => c.name === LIMS_COOKIE_USER_ID)?.value;
-  const sessionId = all.find((c) => c.name === LIMS_COOKIE_SESSION)?.value;
-  if (!userId || !sessionId) return null;
-  return { userId, sessionId };
-}
-
-/** 从已打开标签页 document.cookie 补充 UserId（HttpOnly Session 仍靠 chrome.cookies） */
-async function readUserIdFromTab(origin: string): Promise<string | null> {
-  const pattern = limsTabUrlPattern(origin);
-  const tabs = await chrome.tabs.query({ url: pattern });
-  for (const tab of tabs) {
-    if (!tab.id) continue;
-    try {
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => {
-          const m = document.cookie.match(/(?:^|;\s*)UserId=([^;]+)/);
-          return m ? decodeURIComponent(m[1]) : null;
-        },
-      });
-      const uid = results[0]?.result;
-      if (typeof uid === 'string' && uid.length > 0) return uid;
-    } catch {
-      /* 跳过不可注入页 */
-    }
-  }
-  return null;
-}
 
 /** 写入认证缓存 */
 async function persistAuth(
@@ -81,10 +51,6 @@ async function validateCookies(
     );
     const valid = !!(data && typeof data === 'object' && (data.state === '1' || data.state === 1));
     if (!valid) return { valid: false, userName: null };
-    // 业务接口（Main.ashx）需正确 Referer；同步时一并校验，避免「已连接但工具全 500」
-    await client.call('Index/Main.ashx', { method: 'GetReportNum' }, {
-      refererPath: LIMS_REFERER_UI.mainDashboard,
-    });
     return { valid: true, userName: parseLimsUserDisplayName(data) };
   } catch (err) {
     if (err instanceof LimisSessionError) return { valid: false, userName: null };
@@ -108,21 +74,19 @@ export async function resolveLimsCookies(forceRescan = false): Promise<LimsCooki
     }
   }
 
-  let pair = await readCookiesFromBrowser(origin);
-  if (pair && !pair.userId) {
-    const uid = await readUserIdFromTab(origin);
-    if (uid) pair = { ...pair, userId: uid };
-  }
-  if (!pair) {
-    const uid = await readUserIdFromTab(origin);
-    const sessionOnly = await readCookiesFromBrowser(origin);
-    if (uid && sessionOnly?.sessionId) pair = { userId: uid, sessionId: sessionOnly.sessionId };
-  }
+  let pair = mergeLimsCookiePair(
+    await readLimsCookiesFromBrowser(origin),
+    await readLimsCookiesFromTabDocument(origin),
+  );
 
   if (!pair) {
+    const tabs = await findTabsForOrigin(origin);
     await persistAuth('no_cookies', origin, null);
+    const tabHint = tabs.length > 0
+      ? `已检测到 ${tabs.length} 个 ${origin} 标签页，但未读到 UserId / ASP.NET_SessionId。`
+      : `未找到 ${origin} 标签页。`;
     throw new Error(
-      `未检测到 LIMIS 登录态。请先在浏览器打开 ${origin} 并登录，再调用 lims__sync_auth。`,
+      `${tabHint}请先在浏览器打开 ${origin} 并登录，再调用 lims__sync_auth。`,
     );
   }
 
@@ -144,7 +108,7 @@ export async function openLimsLoginPage(): Promise<void> {
   const connected = cache.status === 'connected' && cache.webOrigin === origin;
   const path = connected ? LIMS_HOME_PATH : LIMS_LOGIN_PATH;
   const url = `${origin}${path}`;
-  const tabs = await chrome.tabs.query({ url: limsTabUrlPattern(origin) });
+  const tabs = await findTabsForOrigin(origin);
   const tab = tabs.find((t) => t.id != null);
   if (tab?.id) {
     await chrome.tabs.update(tab.id, { url, active: true });
