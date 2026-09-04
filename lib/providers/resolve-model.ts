@@ -7,6 +7,7 @@ import type {
 } from '@/lib/persistence/storage';
 import { isCustomProvider, findCustomModel } from '@/lib/providers/custom-models';
 import { getCopilotBaseUrl } from '@/lib/providers/oauth';
+import { getVolcArkModels, isVolcArkProvider } from '@/lib/providers/volc-ark';
 
 /**
  * 把一个模型身份（provider key + modelId）解析成可用的 pi-ai 运行时 `Model`。
@@ -28,6 +29,8 @@ export function resolveModel(
 
   if (isCustomProvider(identity.provider)) {
     model = findCustomModel(customProviders, identity.provider, identity.modelId) ?? undefined;
+  } else if (isVolcArkProvider(identity.provider)) {
+    model = getVolcArkModels(identity.provider).find((m) => m.id === identity.modelId);
   } else {
     try {
       const models = getBuiltinModels(identity.provider as BuiltinProvider) as Model<Api>[];
@@ -55,7 +58,7 @@ export function resolveModel(
       headers: {
         ...model.headers,
         'HTTP-Referer': 'https://cebian.catcat.work',
-        'X-Title': 'Cebian',
+        'X-Title': 'Jianke Assistant',
       },
     };
   }

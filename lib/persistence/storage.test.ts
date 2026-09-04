@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
+import { DEFAULT_FLOATING_BALL_PAGES } from '@/lib/page-actions/default-scopes';
 import {
   memorySettings,
   memoryOrganizeState,
@@ -10,7 +11,7 @@ import {
 // organize 配置的回填：早期只存 { enabled }，后续加了 organize 子结构。WXT 的 fallback
 // 只在 key 整体缺失时生效、不补「已存在但缺字段」的旧值，故读整理配置统一走
 // resolveOrganizeSettings。运行结果态另存 memoryOrganizeState（与用户配置分离，防读改写覆盖）。
-const DEFAULTS = { auto: false, intervalDays: 14, minNewMemories: 30 };
+const DEFAULTS = { auto: true, intervalDays: 14, minNewMemories: 30 };
 
 describe('resolveOrganizeSettings', () => {
   it('organize 缺失 → 全默认', () => {
@@ -42,7 +43,7 @@ describe('memorySettings 存储项', () => {
 
   it('新装机 → fallback 含完整 organize 默认配置', async () => {
     const v = await memorySettings.getValue();
-    expect(v.enabled).toBe(false);
+    expect(v.enabled).toBe(true);
     expect(resolveOrganizeSettings(v)).toEqual(DEFAULTS);
   });
 
@@ -65,9 +66,9 @@ describe('memoryOrganizeState 存储项', () => {
 });
 
 describe('resolvePageInteractionSettings — 页面生效范围', () => {
-  it('缺省补成两个空范围（= 所有页面生效）', () => {
+  it('缺省补成建科业务页范围（悬浮球）与全站（划词工具条）', () => {
     const s = resolvePageInteractionSettings(undefined);
-    expect(s.ballPages).toEqual({ include: [], exclude: [] });
+    expect(s.ballPages).toEqual(DEFAULT_FLOATING_BALL_PAGES);
     expect(s.toolbarPages).toEqual({ include: [], exclude: [] });
   });
 

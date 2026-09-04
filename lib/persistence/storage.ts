@@ -5,6 +5,7 @@ import type { ThinkingLevel } from '@earendil-works/pi-agent-core';
 // 划词动作配置与页面范围的形状归属其概念（lib/page-actions），这里只声明持久化位置。
 import type { PageActionsConfig } from '@/lib/page-actions/types';
 import { resolvePageScope, type PageScope } from '@/lib/page-actions/match';
+import { DEFAULT_FLOATING_BALL_PAGES } from '@/lib/page-actions/default-scopes';
 
 // ─── Provider credential types ───
 
@@ -135,6 +136,49 @@ export const elnAuthCache = storage.defineItem<ElnAuthCache>(
 export const elnBuiltinBundleVersion = storage.defineItem<number>(
   'local:elnBuiltinBundleVersion',
   { fallback: 0 },
+);
+
+// ─── LIMIS 设置与认证 ───
+
+/** LIMIS 服务器配置 */
+export interface LimsSettings {
+  webOrigin: string;
+  /** airport_lab=239 机场工地试验室；headquarters=22 莘庄总部 */
+  preset: 'airport_lab' | 'headquarters' | 'custom' | 'development' | 'production';
+}
+
+export const limsSettings = storage.defineItem<LimsSettings>(
+  'local:limsSettings',
+  {
+    fallback: {
+      preset: 'airport_lab',
+      webOrigin: 'http://10.1.228.239',
+    },
+  },
+);
+
+/** LIMIS Cookie 会话缓存 */
+export interface LimsAuthCache {
+  status: 'unknown' | 'connected' | 'no_cookies' | 'invalid';
+  lastCheckedAt: number | null;
+  webOrigin: string | null;
+  userIdPreview: string | null;
+  userNamePreview: string | null;
+  cookies: { userId: string; sessionId: string } | null;
+}
+
+export const limsAuthCache = storage.defineItem<LimsAuthCache>(
+  'local:limsAuthCache',
+  {
+    fallback: {
+      status: 'unknown',
+      lastCheckedAt: null,
+      webOrigin: null,
+      userIdPreview: null,
+      userNamePreview: null,
+      cookies: null,
+    },
+  },
 );
 
 /** MinerU 文档解析 API 配置 */
@@ -274,7 +318,7 @@ export const webdavConfig = storage.defineItem<WebDavConfig | null>(
 export interface MemoryOrganizeSettings {
   /** 整理用模型；缺省回退当前活跃模型。 */
   model?: ModelIdentity;
-  /** 自动整理开关。默认 false。 */
+  /** 自动整理开关。默认 true。 */
   auto: boolean;
   /** 自动整理最小间隔天数。默认 14。 */
   intervalDays: number;
@@ -300,16 +344,15 @@ export interface MemoryOrganizeState {
  * 补默认值——这是唯一可靠且可测的回填点。
  */
 export interface MemorySettings {
-  /** 记忆系统总开关。关闭时不注入记忆提示/索引、整理调度不运行；文件工具层不做硬拦截。默认 false（隐私优先）。 */
+  /** 记忆系统总开关。关闭时不注入记忆提示/索引、整理调度不运行；文件工具层不做硬拦截。默认 true。 */
   enabled: boolean;
   /** 整理设置（旧装机可能缺；用 `resolveOrganizeSettings` 取规范值）。 */
   organize?: MemoryOrganizeSettings;
 }
 
-/** organize 子结构的默认值（新装机 fallback + 旧装机回填共用单一真理源）。默认偏保守：
- *  自动关、间隔 14 天、攒够 30 条新记忆才自动跑——基本不打扰、不意外烧 token。 */
+/** organize 子结构的默认值（新装机 fallback + 旧装机回填共用单一真理源）。 */
 const DEFAULT_ORGANIZE: MemoryOrganizeSettings = {
-  auto: false,
+  auto: true,
   intervalDays: 14,
   minNewMemories: 30,
 };
@@ -321,7 +364,7 @@ export function resolveOrganizeSettings(s: MemorySettings): MemoryOrganizeSettin
 
 export const memorySettings = storage.defineItem<MemorySettings>(
   'local:memorySettings',
-  { fallback: { enabled: false, organize: { ...DEFAULT_ORGANIZE } } },
+  { fallback: { enabled: true, organize: { ...DEFAULT_ORGANIZE } } },
 );
 
 /** 整理运行结果态（派生）。只有 organize manager 写；fallback 空对象。 */
@@ -355,7 +398,7 @@ export interface PageInteractionSettings {
 const DEFAULT_PAGE_INTERACTION: PageInteractionSettings = {
   showFloatingBall: true,
   showSelectionToolbar: true,
-  ballPages: { include: [], exclude: [] },
+  ballPages: { ...DEFAULT_FLOATING_BALL_PAGES },
   toolbarPages: { include: [], exclude: [] },
 };
 
@@ -388,10 +431,13 @@ export function resolvePageInteractionSettings(
   const scopeOf = (
     key: 'ballPages' | 'toolbarPages',
     legacyHidden: string[] | undefined,
-  ): PageScope =>
-    s && Object.hasOwn(s, key)
-      ? resolvePageScope(merged[key])
-      : { include: [], exclude: [...(legacyHidden ?? [])] };
+  ): PageScope => {
+    if (s && Object.hasOwn(s, key)) return resolvePageScope(merged[key]);
+    if (legacyHidden && legacyHidden.length > 0) {
+      return { include: [], exclude: [...legacyHidden] };
+    }
+    return resolvePageScope(merged[key]);
+  };
 
   return {
     showFloatingBall: merged.showFloatingBall,

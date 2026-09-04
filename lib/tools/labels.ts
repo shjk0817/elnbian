@@ -40,6 +40,10 @@ export function getToolLabel(name: string, args: Record<string, any> = {}): stri
     const tool = name.slice(5);
     return t('tools.elnCall', [tool]);
   }
+  if (name.startsWith('lims__')) {
+    const tool = name.slice(6);
+    return t('tools.limsCall', [tool]);
+  }
   if (name.startsWith('mcp__')) {
     const rest = name.slice(5); // strip "mcp__"
     const sep = rest.indexOf('__');

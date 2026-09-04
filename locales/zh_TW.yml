@@ -2,12 +2,12 @@
 # 修改時請同步 locales/en.yml 與 locales/zh_CN.yml。規範見 .claude/skills/i18n-naming/SKILL.md。
 
 # ─── Manifest（扁平頂層 key，見規範「Manifest localization」）───
-extName: "建科ELN助手"
-extDescription: "建科 ELN 模板編輯 AI 助手。瀏覽器側邊欄即可呼叫 66 個 ELN 工具；在 ELN 網頁登入後自動同步憑證，自備 AI API Key 即可使用。基於 Cebian 開源專案二次開發。"
-actionTitle: "開啟建科ELN助手"
+extName: "建科助手"
+extDescription: "建科 ELN / LIMIS 智能助手。瀏覽器側邊欄即可編輯檢測表單、查詢實驗室業務；自備 AI API Key 即可使用。"
+actionTitle: "開啟建科助手"
 
 app:
-  brandName: "建科ELN助手"
+  brandName: "建科助手"
 
 eln:
   indicator:
@@ -15,6 +15,13 @@ eln:
     connected: "ELN：已連線"
     no_token: "ELN：未登入，點擊前往連線設定"
     invalid: "ELN：登入已失效，點擊重新同步"
+
+lims:
+  indicator:
+    unknown: "LIMIS：尚未檢測連線"
+    connected: "LIMIS：已連線"
+    no_cookies: "LIMIS：未登入，點擊前往連線設定"
+    invalid: "LIMIS：登入已失效，點擊重新同步"
 
 # ─── 通用（UI 中複用）───
 common:
@@ -138,6 +145,7 @@ settings:
     aria: "設定導覽"
     providers: "AI 供應商"
     eln: "ELN 連線"
+    lims: "LIMIS 連線"
     instructions: "指引"
     prompts: "提示詞"
     skills: "技能"
@@ -356,13 +364,36 @@ settings:
       step3: "在側邊欄對話中即可使用 ELN 模板編輯工具"
     mineru:
       title: "文件解析（MinerU）"
-      description: "聊天上傳 PDF/Word/Excel 等大文件時，本地解析失敗或不支援的格式可自動呼叫 MinerU API。於 mineru.net API 管理頁建立 Token。"
+      description: "設定 API Token 後依 MinerU 規格：單次最多 20 個附件，文件≤200MB，圖片≤10MB，支援 PDF/Word/PPT/Excel/圖片/HTML 等。未設定時文件本機解析≤15MB、最多 10 個附件。"
       tokenLabel: "API Token"
       tokenPlaceholder: "Bearer 後的 Token 字串"
       fallback: "本地解析失敗時自動走 MinerU"
       preferMineru: "優先使用 MinerU（跳過本地解析）"
       preferV4: "有 Token 時優先精準 API（最大 200MB）"
       docsLink: "查看 MinerU API 文件"
+  lims:
+    title: "LIMIS 連線"
+    description: "連接實驗室資訊管理系統（生產環境）。在瀏覽器登入 LIMIS 後同步 Cookie，即可使用 lims__* 工具。"
+    serverPreset: "站點"
+    server: "目前位址：$1"
+    userPreview: "UserId：$1"
+    userPreviewWithName: "UserId：$1 · $2"
+    openLogin: "開啟 LIMIS 登入頁"
+    openHome: "開啟 LIMIS 首頁"
+    sync: "同步登入狀態"
+    preset:
+      airport_lab: "機場工地試驗室 (239)"
+      headquarters: "莘莊總部 (22)"
+    status:
+      unknown: "尚未檢測"
+      connected: "已連線"
+      no_cookies: "未登入 — 請先在瀏覽器開啟 LIMIS 並登入"
+      invalid: "登入已失效 — 請重新登入後同步"
+    howTo:
+      title: "使用步驟"
+      step1: "選擇試驗室站點，點擊「開啟 LIMIS 登入頁」並登入"
+      step2: "登入成功後點擊「同步登入狀態」"
+      step3: "在對話中呼叫 lims__check_auth、lims__get_dashboard_counts 等工具測試"
   mcp:
     title: "MCP 伺服器"
     description: "連接 Model Context Protocol 伺服器，把它們的工具開放給 agent 使用。"
@@ -706,6 +737,10 @@ chat:
     exampleExtractPrompt: "請從目前頁面中擷取關鍵資訊（標題、要點、重要連結），整理成清單。"
     exampleTabsTitle: "整理我的分頁"
     exampleTabsPrompt: "請看看我目前開了哪些分頁，依主題幫我歸類，並指出可以關掉的重複頁面。"
+    exampleLimsAuditTitle: "報告審核"
+    exampleLimsReportPeriodTitle: "週報 / 月報生成"
+    exampleLimsRemindersTitle: "LIMIS 事項"
+    exampleLimsQueryReportTitle: "查詢報告"
     exampleElnCreateTitle: "ELN 新建模板"
     exampleElnEditTitle: "ELN 編輯模板"
     exampleElnStatsTitle: "ELN 模板統計"
@@ -794,6 +829,7 @@ tools:
   # $1 = MCP 伺服器 slug（展示形式），$2 = 遠端工具名
   mcpCall: "$1 · $2"
   elnCall: "ELN · $1"
+  limsCall: "LIMIS · $1"
   fs:
     # $1 = 檔案路徑
     createFile: "正在建立檔案 $1"

@@ -8,6 +8,7 @@ import { setupRecorderClientHandlers } from './recorder/client-handlers';
 import { setupRecorderPortRelay } from './recorder/port-relay';
 import { setupMcpBridge } from './mcp/bridge';
 import { setupElnBridge } from './eln/bridge';
+import { setupLimsBridge } from './lims/bridge';
 import { seedElnBuiltinContent } from '@/lib/eln/seed-eln-builtin';
 import { seedDevStorage } from './providers/dev-seed';
 import { registerBackupHandler } from './chat/backup-handler';
@@ -19,6 +20,7 @@ import { isInjectablePage } from '@/lib/browser/tab-actions';
 import { setupUpdateNotice } from './lifecycle/update-notice';
 import { setupPortRegistry } from './ipc/port-registry';
 import { setupClientRouter } from './ipc/client-router';
+import { migrateFloatingBallScopeOnce } from './migrate-floating-ball-scope';
 
 export default defineBackground(() => {
   console.log('Cebian background started', { id: browser.runtime.id });
@@ -41,6 +43,9 @@ export default defineBackground(() => {
     materializeHandoff,
     onContentPresent: handleContentPresent,
   });
+  void migrateFloatingBallScopeOnce().catch((err) =>
+    console.warn('[page-actions] ball scope migration failed:', err),
+  );
 
   // 启动崩溃恢复：清理上次未收尾的整理。尽早触发；runOrganize 会 await 同一记忆化 promise，
   // 故整理流程不会与恢复重叠。其余记忆读取不强制等待它（崩溃恢复罕见、且 redoCommit 幂等）。
@@ -196,6 +201,7 @@ export default defineBackground(() => {
   setupMemoryClientHandlers();
   setupMcpBridge();
   setupElnBridge();
+  setupLimsBridge();
   void seedElnBuiltinContent().catch((err) =>
     console.warn('[eln] seed builtin failed:', err),
   );

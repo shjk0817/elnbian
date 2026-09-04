@@ -24,9 +24,10 @@ import { vfs } from '@/lib/persistence/vfs';
 import { parseFrontmatter } from '@/lib/content/frontmatter';
 import { CEBIAN_PROMPTS_DIR } from '@/lib/persistence/vfs-paths';
 import {
-  MAX_ATTACHMENT_COUNT, MAX_IMAGE_SIZE, MAX_TEXT_FILE_SIZE,
+  MAX_TEXT_FILE_SIZE,
   MAX_LOCAL_EXTRACTED_TEXT, MAX_MINERU_EXTRACTED_TEXT,
   DOCUMENT_UPLOAD_ACCEPT, getMaxDocumentUploadSize,
+  getMaxImageUploadSize, getMaxAttachmentCount,
   RECORDING_MIME,
   isImageFile, isTextFile, isUploadDocumentFile,
   type Attachment,
@@ -121,6 +122,21 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
 
   const [providers] = useStorageItem(providerCredentials, {});
   const [customProviderList] = useStorageItem(customProvidersStorage, []);
+  const [mineru] = useStorageItem(mineruSettings, {
+    apiToken: '',
+    fallbackEnabled: true,
+    preferMineru: false,
+    preferV4: true,
+  });
+  const hasMineruToken = Boolean(mineru.apiToken?.trim());
+  const maxAttachmentCount = useMemo(
+    () => getMaxAttachmentCount(hasMineruToken),
+    [hasMineruToken],
+  );
+  const maxImageSize = useMemo(
+    () => getMaxImageUploadSize(hasMineruToken),
+    [hasMineruToken],
+  );
 
   // 当前模型解析成 pi-ai Model（内置 + 自定义统一走 resolveModel）。是否支持图片 /
   // 支持哪些思考档 等能力派生共用这一次解析，避免多份内联解析各自漂移
@@ -403,8 +419,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
   useEffect(() => {
     return recorderChannel.subscribeSession((session) => {
       const current = attachmentsRef.current;
-      if (current.length >= MAX_ATTACHMENT_COUNT) {
-        toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+      if (current.length >= maxAttachmentCount) {
+        toast.warning(t('chat.composer.maxAttachments', [maxAttachmentCount]));
         return;
       }
       const next = [...current, recordingToAttachment(session)];
@@ -451,8 +467,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
         // Pre-flight cap check: refuse to send if attachments are already
         // full — otherwise the about-to-be-delivered recording would be
         // silently dropped by the session subscription's overflow guard.
-        if (attachmentsRef.current.length >= MAX_ATTACHMENT_COUNT) {
-          toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+        if (attachmentsRef.current.length >= maxAttachmentCount) {
+          toast.warning(t('chat.composer.maxAttachments', [maxAttachmentCount]));
           return;
         }
         // Wait for the BG to finalize. The session is delivered (and
@@ -745,8 +761,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
           );
           if (isDuplicate) {
             toast.info(t('chat.composer.elementAdded'));
-          } else if (attachments.length >= MAX_ATTACHMENT_COUNT) {
-            toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+          } else if (attachments.length >= maxAttachmentCount) {
+            toast.warning(t('chat.composer.maxAttachments', [maxAttachmentCount]));
           } else {
             setAttachments((prev) => [...prev, att]);
           }
@@ -781,8 +797,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       toast.warning(t('chat.composer.modelNoImage'));
       return;
     }
-    if (attachments.length >= MAX_ATTACHMENT_COUNT) {
-      toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+    if (attachments.length >= maxAttachmentCount) {
+      toast.warning(t('chat.composer.maxAttachments', [maxAttachmentCount]));
       return;
     }
     try {
@@ -817,7 +833,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       }
       const content = formatExtractedDocumentContent(file.name, parsed);
       setAttachments((prev) => {
-        if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+        if (prev.length >= maxAttachmentCount) return prev;
         return [...prev, {
           type: 'file',
           content,
@@ -846,8 +862,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
         toast.warning(t('chat.composer.modelNoImage'));
         return;
       }
-      if (file.size > MAX_IMAGE_SIZE) {
-        toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(MAX_IMAGE_SIZE)]));
+      if (file.size > maxImageSize) {
+        toast.error(t('chat.composer.fileTooLarge', [file.name, formatBytes(maxImageSize)]));
         return;
       }
       const reader = new FileReader();
@@ -858,12 +874,16 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
         const base64 = dataUrl.split(',', 2)[1] ?? '';
         const mimeType = file.type || 'image/png';
         setAttachments((prev) => {
-          if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+          if (prev.length >= maxAttachmentCount) return prev;
           return [...prev, { type: 'image', source: 'upload', data: base64, mimeType, name: file.name }];
         });
       };
       reader.onerror = () => toast.error(t('chat.composer.readFileFailed', [file.name]));
       reader.readAsDataURL(file);
+      return;
+    }
+    if (isUploadDocumentFile(file.name)) {
+      void processDocumentFile(file);
       return;
     }
     if (isTextFile(file.name)) {
@@ -875,7 +895,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       reader.onload = () => {
         if (isDispatchingRef.current) return;
         setAttachments((prev) => {
-          if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+          if (prev.length >= maxAttachmentCount) return prev;
           return [...prev, {
             type: 'file',
             content: reader.result as string,
@@ -889,19 +909,15 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       reader.readAsText(file);
       return;
     }
-    if (isUploadDocumentFile(file.name)) {
-      void processDocumentFile(file);
-      return;
-    }
     toast.error(t('chat.composer.unsupportedFileType', [file.name]));
-  }, [processDocumentFile, supportsImage]);
+  }, [processDocumentFile, supportsImage, maxImageSize]);
 
   /** 批量处理选中的文件 */
   const processUploadFiles = useCallback((files: File[]) => {
     if (isDispatchingRef.current || files.length === 0) return;
-    const remaining = MAX_ATTACHMENT_COUNT - attachmentsRef.current.length;
+    const remaining = maxAttachmentCount - attachmentsRef.current.length;
     if (remaining <= 0) {
-      toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+      toast.warning(t('chat.composer.maxAttachments', [maxAttachmentCount]));
       return;
     }
     const batch = files.slice(0, remaining);
@@ -909,7 +925,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       toast.warning(t('chat.composer.truncatedFiles', [remaining]));
     }
     for (const file of batch) processUploadFile(file);
-  }, [processUploadFile]);
+  }, [processUploadFile, maxAttachmentCount]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isDispatchingRef.current) {
@@ -966,9 +982,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     // many screenshot tools also put text/html (filename / <img>) which we don't want in the textarea.
     if (!hasPlainText) e.preventDefault();
 
-    const remaining = MAX_ATTACHMENT_COUNT - attachments.length;
+    const remaining = maxAttachmentCount - attachments.length;
     if (remaining <= 0) {
-      toast.warning(t('chat.composer.maxAttachments', [MAX_ATTACHMENT_COUNT]));
+      toast.warning(t('chat.composer.maxAttachments', [maxAttachmentCount]));
       return;
     }
 
@@ -978,8 +994,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
     }
 
     for (const file of filesToProcess) {
-      if (file.size > MAX_IMAGE_SIZE) {
-        toast.error(t('chat.composer.fileTooLarge', [file.name || 'image', formatBytes(MAX_IMAGE_SIZE)]));
+      if (file.size > maxImageSize) {
+        toast.error(t('chat.composer.fileTooLarge', [file.name || 'image', formatBytes(maxImageSize)]));
         continue;
       }
       const reader = new FileReader();
@@ -996,7 +1012,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
             if (!hasPlainText) toast.info(t('chat.composer.imageAlreadyAdded'));
             return prev;
           }
-          if (prev.length >= MAX_ATTACHMENT_COUNT) return prev;
+          if (prev.length >= maxAttachmentCount) return prev;
           return [...prev, { type: 'image', source: 'paste', data: base64, mimeType, name: file.name || undefined }];
         });
       };

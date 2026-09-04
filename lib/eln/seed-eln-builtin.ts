@@ -42,7 +42,7 @@ function shouldWritePromptFile(
 ): boolean {
   if (!exists) return true;
   if (!needUpgrade) return false;
-  return file.relativePath.startsWith('eln-template-');
+  return file.relativePath.startsWith('eln-template-') || file.relativePath.startsWith('lims-');
 }
 
 /** 确保父目录存在 */

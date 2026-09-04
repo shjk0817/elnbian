@@ -33,6 +33,9 @@ const EXEMPT_FILE_REGEXES = [
   /[\\/]lib[\\/]eln[\\/]/,
   /[\\/]lib[\\/]mineru[\\/]/,
   /[\\/]lib[\\/]tools[\\/]eln[\\/]/,
+  /[\\/]lib[\\/]lims[\\/]/,
+  /[\\/]lib[\\/]tools[\\/]lims[\\/]/,
+  /[\\/]lib[\\/]providers[\\/]registry\.ts$/,
   /[\\/]lib[\\/]content[\\/]parse-uploaded-document\.ts$/,
   /[\\/]entrypoints[\\/]offscreen[\\/](document-parse|docx|xlsx)\.ts$/,
   /[\\/]components[\\/]chat[\\/]WelcomeScreen\.tsx$/,
@@ -48,7 +51,7 @@ const ALLOWED_TOP_KEYS = new Set([
   'extName', 'extDescription', 'actionTitle',
   // Namespaces.
   'common', 'chat', 'settings', 'provider', 'tools', 'vfs', 'permission', 'dialogs', 'errors', 'agent', 'pageActions',
-  'app', 'eln',
+  'app', 'eln', 'lims',
 ]);
 
 async function* walk(dir) {

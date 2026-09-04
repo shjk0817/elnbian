@@ -76,7 +76,7 @@ describe('resolveModel — built-in provider', () => {
     const model = resolveModel({ provider: 'openrouter', modelId: id }, NO_CREDS, NO_CUSTOM);
     expect(model).not.toBeNull();
     expect(model!.headers?.['HTTP-Referer']).toBe('https://cebian.catcat.work');
-    expect(model!.headers?.['X-Title']).toBe('Cebian');
+    expect(model!.headers?.['X-Title']).toBe('Jianke Assistant');
   });
 
   it('非 openrouter provider 不注入归因头', () => {

@@ -2,6 +2,7 @@ import { getBuiltinModels, type BuiltinProvider } from '@earendil-works/pi-ai/pr
 import type { Api, Model } from '@earendil-works/pi-ai';
 import type { ProviderCredential, CustomProviderConfig } from '@/lib/persistence/storage';
 import { isCustomProvider, findCustomProvider, getCustomModels } from '@/lib/providers/custom-models';
+import { getVolcArkModels, isVolcArkProvider } from '@/lib/providers/volc-ark';
 import { t } from '@/lib/i18n';
 
 interface ProviderSummaryProps {
@@ -20,6 +21,9 @@ export function ProviderSummary({ provider, credential, customProviders }: Provi
       models = getCustomModels(config);
       displayName = config.name;
     }
+  } else if (isVolcArkProvider(provider)) {
+    models = getVolcArkModels(provider);
+    displayName = provider;
   } else {
     try {
       models = getBuiltinModels(provider as BuiltinProvider) as Model<Api>[];

@@ -2,13 +2,13 @@
 # 修改时请同步 locales/en.yml 与 locales/zh_TW.yml。规范见 .claude/skills/i18n-naming/SKILL.md。
 
 # ─── Manifest（扁平顶层 key，见规范"Manifest localization"）───
-extName: "建科ELN助手"
-extDescription: "建科 ELN 模板编辑 AI 助手。浏览器侧边栏对话即可调用 66 个 ELN 工具编辑检测表单；在 ELN 网页登录后自动同步凭据，自备 AI API Key 即可使用。基于 Cebian 开源项目二次开发。"
-actionTitle: "打开建科ELN助手"
+extName: "建科助手"
+extDescription: "建科 ELN / LIMIS 智能助手。浏览器侧边栏对话即可编辑检测表单、查询实验室业务；自备 AI API Key 即可使用。"
+actionTitle: "打开建科助手"
 
 # ─── 应用品牌 ───
 app:
-  brandName: "建科ELN助手"
+  brandName: "建科助手"
 
 # ─── ELN 状态指示 ───
 eln:
@@ -17,6 +17,13 @@ eln:
     connected: "ELN：已连接"
     no_token: "ELN：未登录，点击前往连接设置"
     invalid: "ELN：登录已失效，点击重新同步"
+
+lims:
+  indicator:
+    unknown: "LIMIS：尚未检测连接"
+    connected: "LIMIS：已连接"
+    no_cookies: "LIMIS：未登录，点击前往连接设置"
+    invalid: "LIMIS：登录已失效，点击重新同步"
 
 # ─── 通用（UI 中复用）───
 common:
@@ -140,6 +147,7 @@ settings:
     aria: "设置导航"
     providers: "AI 提供商"
     eln: "ELN 连接"
+    lims: "LIMIS 连接"
     instructions: "指引"
     prompts: "提示词"
     skills: "技能"
@@ -358,13 +366,36 @@ settings:
       step3: "在侧边栏对话中即可使用 ELN 模板编辑工具"
     mineru:
       title: "文档解析（MinerU）"
-      description: "聊天上传 PDF/Word/Excel 等大文档时，本地解析失败或格式不支持可自动调用 MinerU API。在 mineru.net API 管理页创建 Token。"
+      description: "配置 API Token 后按 MinerU 规格：单次最多 20 个附件，文档≤200MB，图片≤10MB，支持 PDF/Word/PPT/Excel/图片/HTML 等。未配置时文档本地解析≤15MB、最多 10 个附件。"
       tokenLabel: "API Token"
       tokenPlaceholder: "Bearer 后的 Token 字符串"
       fallback: "本地解析失败时自动走 MinerU"
       preferMineru: "优先使用 MinerU（跳过本地解析）"
       preferV4: "有 Token 时优先精准 API（最大 200MB）"
       docsLink: "查看 MinerU API 文档"
+  lims:
+    title: "LIMIS 连接"
+    description: "连接实验室信息管理系统（生产环境）。在浏览器登录 LIMIS 后同步 Cookie，即可使用 lims__* 工具。"
+    serverPreset: "站点"
+    server: "当前地址：$1"
+    userPreview: "UserId：$1"
+    userPreviewWithName: "UserId：$1 · $2"
+    openLogin: "打开 LIMIS 登录页"
+    openHome: "打开 LIMIS 首页"
+    sync: "同步登录态"
+    preset:
+      airport_lab: "机场工地试验室 (239)"
+      headquarters: "莘庄总部 (22)"
+    status:
+      unknown: "尚未检测"
+      connected: "已连接"
+      no_cookies: "未登录 — 请先在浏览器打开 LIMIS 并登录"
+      invalid: "登录已失效 — 请重新登录后同步"
+    howTo:
+      title: "使用步骤"
+      step1: "选择试验室站点，点击「打开 LIMIS 登录页」并登录"
+      step2: "登录成功后点击「同步登录态」"
+      step3: "在对话中调用 lims__check_auth、lims__get_dashboard_counts 等工具测试"
   mcp:
     title: "MCP 服务器"
     description: "接入 Model Context Protocol 服务器，把它们的工具暴露给 agent 使用。"
@@ -712,6 +743,10 @@ chat:
     exampleExtractPrompt: "请从当前页面中提取关键信息（标题、要点、重要链接），整理成清单。"
     exampleTabsTitle: "整理我的标签页"
     exampleTabsPrompt: "请看看我当前打开了哪些标签页，按主题帮我归类，并指出可以关掉的重复页面。"
+    exampleLimsAuditTitle: "报告审核"
+    exampleLimsReportPeriodTitle: "周报 / 月报生成"
+    exampleLimsRemindersTitle: "LIMIS 事项"
+    exampleLimsQueryReportTitle: "查询报告"
     exampleElnCreateTitle: "ELN 新建模板"
     exampleElnEditTitle: "ELN 编辑模板"
     exampleElnStatsTitle: "ELN 模板统计"
@@ -800,6 +835,7 @@ tools:
   # $1 = MCP 服务器 slug（展示形式），$2 = 远端工具名
   mcpCall: "$1 · $2"
   elnCall: "ELN · $1"
+  limsCall: "LIMIS · $1"
   fs:
     # $1 = 文件路径
     createFile: "正在创建文件 $1"

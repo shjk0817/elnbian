@@ -38,10 +38,24 @@ async function mineruGet<T>(url: string, token?: string): Promise<T> {
   return json.data;
 }
 
-/** PUT 上传文件到 OSS 签名地址 */
+/** PUT 上传文件到 OSS 预签名地址（不得带 Content-Type，否则 SignatureDoesNotMatch → 403） */
 async function putFile(url: string, file: File): Promise<void> {
-  const res = await fetch(url, { method: 'PUT', body: file });
-  if (!res.ok) throw new Error(`MinerU 文件上传失败 (HTTP ${res.status})`);
+  const body = await file.arrayBuffer();
+  const res = await fetch(url, {
+    method: 'PUT',
+    body,
+    // MinerU/OSS 按「无 Content-Type」签名；fetch(File) 会自动带 application/pdf
+    headers: { 'Content-Type': '' },
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    const hint = res.status === 403
+      ? '（多为 OSS 签名与请求头不匹配，已按官方要求清空 Content-Type）'
+      : '';
+    throw new Error(
+      `MinerU 文件上传失败 (HTTP ${res.status})${hint}${detail ? `: ${detail.slice(0, 200)}` : ''}`,
+    );
+  }
 }
 
 /** 下载 URL 文本 */
@@ -97,6 +111,7 @@ export async function parseFileViaMineruV4(file: File, token: string): Promise<s
   );
   if (!batch.file_urls?.[0]) throw new Error('MinerU 未返回上传地址');
   await putFile(batch.file_urls[0], file);
+  await sleep(1500);
   const zipUrl = await pollV4Batch(batch.batch_id, token);
   const zipBuf = await (await fetch(zipUrl)).arrayBuffer();
   return extractMarkdownFromZip(zipBuf);

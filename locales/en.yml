@@ -3,12 +3,12 @@
 # See .claude/skills/i18n-naming/SKILL.md.
 
 # ─── Manifest (flat top-level keys, see skill "Manifest localization") ───
-extName: "Jianke ELN Assistant"
-extDescription: "AI assistant for Jianke ELN template design. 66 built-in ELN tools in the side panel; sign in to ELN in your browser to sync credentials. Bring your own AI API key. Forked from Cebian (AGPL-3.0)."
-actionTitle: "Open Jianke ELN Assistant"
+extName: "Jianke Assistant"
+extDescription: "AI assistant for Jianke ELN and LIMIS. Edit test forms and query lab workflows in the side panel. Bring your own AI API key."
+actionTitle: "Open Jianke Assistant"
 
 app:
-  brandName: "Jianke ELN Assistant"
+  brandName: "Jianke Assistant"
 
 eln:
   indicator:
@@ -16,6 +16,13 @@ eln:
     connected: "ELN: connected"
     no_token: "ELN: not signed in — click to open connection settings"
     invalid: "ELN: session expired — click to sync again"
+
+lims:
+  indicator:
+    unknown: "LIMIS: not checked yet"
+    connected: "LIMIS: connected"
+    no_cookies: "LIMIS: not signed in — click to open connection settings"
+    invalid: "LIMIS: session expired — click to sync again"
 
 # ─── Common (reused across the UI) ───
 common:
@@ -142,6 +149,7 @@ settings:
     aria: "Settings navigation"
     providers: "AI providers"
     eln: "ELN"
+    lims: "LIMIS"
     instructions: "Instructions"
     prompts: "Prompts"
     skills: "Skills"
@@ -360,13 +368,36 @@ settings:
       step3: "ELN template tools are available in the side panel chat"
     mineru:
       title: "Document parsing (MinerU)"
-      description: "When local parsing fails or the format is unsupported, call MinerU API for PDF/Word/Excel uploads. Create a token at mineru.net API management."
+      description: "With an API token: up to 20 attachments per message, documents ≤200MB, images ≤10MB (PDF/Word/PPT/Excel/images/HTML). Without a token: local parsing ≤15MB, up to 10 attachments."
       tokenLabel: "API Token"
       tokenPlaceholder: "Token string (without Bearer)"
       fallback: "Fall back to MinerU when local parsing fails"
       preferMineru: "Prefer MinerU (skip local parsing)"
       preferV4: "Prefer v4 API when token is set (up to 200MB)"
       docsLink: "MinerU API docs"
+  lims:
+    title: "LIMIS Connection"
+    description: "Connect to the lab information system (production). Sign in in your browser, then sync cookies to use lims__* tools."
+    serverPreset: "Site"
+    server: "Current URL: $1"
+    userPreview: "UserId: $1"
+    userPreviewWithName: "UserId: $1 · $2"
+    openLogin: "Open LIMIS login"
+    openHome: "Open LIMIS home"
+    sync: "Sync login"
+    preset:
+      airport_lab: "Airport site lab (239)"
+      headquarters: "Xinzhuang HQ (22)"
+    status:
+      unknown: "Not checked yet"
+      connected: "Connected"
+      no_cookies: "Not logged in — open LIMIS in your browser and sign in"
+      invalid: "Session expired — sign in again and sync"
+    howTo:
+      title: "How to use"
+      step1: "Choose a lab site, open LIMIS login and sign in"
+      step2: "After signing in, click \"Sync login\""
+      step3: "Try lims__check_auth, lims__get_dashboard_counts in chat"
   mcp:
     title: "MCP Servers"
     description: "Connect Model Context Protocol servers to expose their tools to the agent."
@@ -719,6 +750,10 @@ chat:
     exampleExtractPrompt: "Extract the key information from the current page (title, main points, important links) and organize it into a list."
     exampleTabsTitle: "Organize my tabs"
     exampleTabsPrompt: "Take a look at the tabs I currently have open, group them by topic, and point out any duplicate pages I can close."
+    exampleLimsAuditTitle: "Report audit"
+    exampleLimsReportPeriodTitle: "Weekly / monthly report"
+    exampleLimsRemindersTitle: "LIMIS reminders"
+    exampleLimsQueryReportTitle: "Find reports"
     exampleElnCreateTitle: "ELN: New template"
     exampleElnEditTitle: "ELN: Edit template"
     exampleElnStatsTitle: "ELN: Template stats"
@@ -807,6 +842,7 @@ tools:
   # $1 = MCP server slug (display form), $2 = remote tool name
   mcpCall: "$1 · $2"
   elnCall: "ELN · $1"
+  limsCall: "LIMIS · $1"
   fs:
     # $1 = file path
     createFile: "Creating file $1"

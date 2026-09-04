@@ -133,6 +133,7 @@ function App() {
             onToggleTheme={toggleTheme}
             onOpenSettings={() => navigate('/settings')}
             onOpenElnSettings={() => navigate('/settings/eln')}
+            onOpenLimsSettings={() => navigate('/settings/lims')}
             onNewChat={handleNewChat}
             onOpenHistory={() => setHistoryOpen(true)}
           />

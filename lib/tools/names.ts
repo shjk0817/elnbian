@@ -51,3 +51,10 @@ export const TOOL_CHROME_API = 'chrome_api' as const;
 export const TOOL_ELN_CHECK_AUTH = 'eln__check_auth' as const;
 /** 从 ELN 标签页同步 JWT */
 export const TOOL_ELN_SYNC_AUTH = 'eln__sync_auth' as const;
+
+// ─── LIMIS 内置工具名 ───
+
+/** 检查 LIMIS 登录态 */
+export const TOOL_LIMS_CHECK_AUTH = 'lims__check_auth' as const;
+/** 从 LIMIS 标签页同步 Cookie */
+export const TOOL_LIMS_SYNC_AUTH = 'lims__sync_auth' as const;

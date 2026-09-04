@@ -1,8 +1,8 @@
 {
   "name": "elnbian",
-  "description": "建科 ELN 模板编辑 AI 助手 — 浏览器侧边栏内置 66 个 ELN 工具",
+  "description": "建科助手 — ELN / LIMIS 智能侧边栏扩展",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.7",
   "license": "AGPL-3.0-only",
   "type": "module",
   "packageManager": "pnpm@10.22.0",

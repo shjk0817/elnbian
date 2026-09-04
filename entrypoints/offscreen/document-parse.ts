@@ -23,7 +23,7 @@ export function isLocallyParsableExtension(ext: string): boolean {
 
 /** 仅能通过 MinerU 解析的扩展名 */
 export function isMineruOnlyExtension(ext: string): boolean {
-  return ['.doc', '.ppt', '.pptx', '.xls'].includes(ext);
+  return ['.doc', '.ppt', '.pptx', '.xls', '.html', '.htm'].includes(ext);
 }
 
 /** 按扩展名路由到 PDF 或 DOCX 解析器 */

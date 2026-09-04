@@ -7,6 +7,7 @@ import { AlertTriangle, Check, ChevronDown, Settings } from 'lucide-react';
 import type { ModelIdentity, ProviderCredentials, CustomProviderConfig } from '@/lib/persistence/storage';
 import { isCustomProvider, findCustomProvider } from '@/lib/providers/custom-models';
 import { isUsableModel, listUsableModelGroups } from '@/lib/providers/usable-models';
+import { getVolcArkModels, isVolcArkProvider } from '@/lib/providers/volc-ark';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,7 +64,9 @@ export function ModelSelector({
 
     // Built-in provider
     try {
-      const models = getBuiltinModels(activeModel.provider as BuiltinProvider) as Model<Api>[];
+      const models = isVolcArkProvider(activeModel.provider)
+        ? getVolcArkModels(activeModel.provider)
+        : (getBuiltinModels(activeModel.provider as BuiltinProvider) as Model<Api>[]);
       return models.find(m => m.id === activeModel.modelId)?.name ?? activeModel.modelId;
     } catch {
       return activeModel.modelId;

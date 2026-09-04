@@ -2,6 +2,8 @@ import { getBuiltinModels, type BuiltinProvider } from '@earendil-works/pi-ai/pr
 import type { Api, Model } from '@earendil-works/pi-ai';
 import type { ModelIdentity, ProviderCredentials, CustomProviderConfig } from '@/lib/persistence/storage';
 import { isCustomProvider, getCustomModels, customProviderKey } from '@/lib/providers/custom-models';
+import { APIKEY_PROVIDERS } from '@/lib/providers/registry';
+import { getVolcArkModels, isVolcArkProvider } from '@/lib/providers/volc-ark';
 
 /** 一组可选模型：同一 provider 下的全部模型 + 展示用 label。 */
 export interface ModelGroup {
@@ -43,9 +45,12 @@ export function listUsableModelGroups(
     if (isCustomProvider(provider)) continue;
     if (seen.has(provider)) continue;
     try {
-      const models = getBuiltinModels(provider as BuiltinProvider) as Model<Api>[];
+      const models = isVolcArkProvider(provider)
+        ? getVolcArkModels(provider)
+        : (getBuiltinModels(provider as BuiltinProvider) as Model<Api>[]);
       if (models.length > 0) {
-        groups.push({ provider, label: provider, models });
+        const label = APIKEY_PROVIDERS.find((p) => p.provider === provider)?.label ?? provider;
+        groups.push({ provider, label, models });
       }
     } catch {
       // Unknown provider, skip

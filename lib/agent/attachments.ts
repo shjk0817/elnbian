@@ -1,6 +1,7 @@
 import type { ImageContent } from '@earendil-works/pi-ai';
 import { escapeXml } from '@/lib/utils';
 import { RECORDING_SCHEMA_COMMENT } from '@/lib/recorder/schema-doc';
+import { MINERU_V4_MAX_BYTES } from '@/lib/mineru/client';
 
 // ─── Attachment types ───
 
@@ -61,23 +62,25 @@ export type Attachment = ImageAttachment | TextFileAttachment | ElementAttachmen
  *  envelope and browser downloads of recording attachments. */
 export const RECORDING_MIME = 'application/x-cebian-recording+json';
 
-// ─── Size / type limits ───
+// ─── Size / type limits（与 MinerU API 规格对齐，见设置 → 文档解析）───
 
-export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;      // 5 MB
-export const MAX_TEXT_FILE_SIZE = 100 * 1024;         // 100 KB
-/** 上传的 PDF/DOCX 原始文件大小上限 */
-export const MAX_LOCAL_DOCUMENT_SIZE = 15 * 1024 * 1024; // 15 MB（本地解析）
+export const MAX_IMAGE_SIZE_LEGACY = 5 * 1024 * 1024;
+export const MINERU_MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+/** @deprecated 使用 getMaxImageUploadSize */
+export const MAX_IMAGE_SIZE = MINERU_MAX_IMAGE_BYTES;
+export const MAX_TEXT_FILE_SIZE = 100 * 1024;
+export const MAX_LOCAL_DOCUMENT_SIZE = 15 * 1024 * 1024;
 /** @deprecated 使用 MAX_LOCAL_DOCUMENT_SIZE */
 export const MAX_DOCUMENT_UPLOAD_SIZE = MAX_LOCAL_DOCUMENT_SIZE;
-/** 本地解析后注入 prompt 的文本上限 */
-export const MAX_LOCAL_EXTRACTED_TEXT = 400 * 1024;    // 400 KB
-/** MinerU 解析后允许更大的文本注入 */
-export const MAX_MINERU_EXTRACTED_TEXT = 1024 * 1024;  // 1 MB
+export const MAX_LOCAL_EXTRACTED_TEXT = 400 * 1024;
+export const MAX_MINERU_EXTRACTED_TEXT = 1024 * 1024;
 /** @deprecated 使用 MAX_LOCAL_EXTRACTED_TEXT */
 export const MAX_EXTRACTED_DOCUMENT_TEXT = MAX_LOCAL_EXTRACTED_TEXT;
-/** Cap recording JSON to keep prompt budget reasonable (~80k tokens worst case). */
-export const MAX_RECORDING_SIZE = 256 * 1024;         // 256 KB
-export const MAX_ATTACHMENT_COUNT = 10;
+export const MAX_RECORDING_SIZE = 256 * 1024;
+export const MAX_ATTACHMENT_COUNT_LEGACY = 10;
+export const MAX_ATTACHMENT_COUNT_MINERU = 20;
+/** @deprecated 使用 getMaxAttachmentCount */
+export const MAX_ATTACHMENT_COUNT = MAX_ATTACHMENT_COUNT_LEGACY;
 
 const TEXT_EXTENSIONS = new Set([
   '.txt', '.md', '.csv', '.tsv', '.log',
@@ -91,15 +94,25 @@ const TEXT_EXTENSIONS = new Set([
 
 /** 可通过解析为文本后上传的文档扩展名 */
 const DOCUMENT_EXTENSIONS = new Set([
-  '.pdf', '.docx', '.doc', '.xlsx', '.xls', '.ppt', '.pptx',
+  '.pdf', '.docx', '.doc', '.xlsx', '.xls', '.ppt', '.pptx', '.html', '.htm',
 ]);
 
 /** `<input accept>` 附加的文档扩展名 */
-export const DOCUMENT_UPLOAD_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
+export const DOCUMENT_UPLOAD_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.html,.htm';
 
-/** 根据是否配置 MinerU Token 返回上传大小上限 */
+/** 根据是否配置 MinerU Token 返回文档上传大小上限（v4 精准 API ≤200MB） */
 export function getMaxDocumentUploadSize(hasMineruToken: boolean): number {
-  return hasMineruToken ? 200 * 1024 * 1024 : 15 * 1024 * 1024;
+  return hasMineruToken ? MINERU_V4_MAX_BYTES : MAX_LOCAL_DOCUMENT_SIZE;
+}
+
+/** 根据是否配置 MinerU Token 返回图片上传大小上限 */
+export function getMaxImageUploadSize(hasMineruToken: boolean): number {
+  return hasMineruToken ? MINERU_MAX_IMAGE_BYTES : MAX_IMAGE_SIZE_LEGACY;
+}
+
+/** 根据是否配置 MinerU Token 返回单次消息附件数量上限 */
+export function getMaxAttachmentCount(hasMineruToken: boolean): number {
+  return hasMineruToken ? MAX_ATTACHMENT_COUNT_MINERU : MAX_ATTACHMENT_COUNT_LEGACY;
 }
 
 const IMAGE_MIME_TYPES = new Set([

@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ElnConnectionIndicator } from '@/components/layout/ElnConnectionIndicator';
+import { LimsConnectionIndicator } from '@/components/layout/LimsConnectionIndicator';
 import { t } from '@/lib/i18n';
 
 interface HeaderProps {
@@ -16,6 +17,7 @@ interface HeaderProps {
   onToggleTheme: () => void;
   onOpenSettings: () => void;
   onOpenElnSettings: () => void;
+  onOpenLimsSettings: () => void;
   onNewChat: () => void;
   onOpenHistory: () => void;
 }
@@ -27,6 +29,7 @@ export function Header({
   onToggleTheme,
   onOpenSettings,
   onOpenElnSettings,
+  onOpenLimsSettings,
   onNewChat,
   onOpenHistory,
 }: HeaderProps) {
@@ -54,6 +57,7 @@ export function Header({
 
       <span className="flex-1 text-center text-sm font-medium truncate px-2 flex items-center justify-center gap-2">
         <span className="truncate">{title || (isNewChat ? t('app.brandName') : '')}</span>
+        <LimsConnectionIndicator onOpenLimsSettings={onOpenLimsSettings} />
         <ElnConnectionIndicator onOpenElnSettings={onOpenElnSettings} />
       </span>
 

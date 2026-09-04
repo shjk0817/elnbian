@@ -11,10 +11,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const SKILL_ROOT = path.join(ROOT, 'skills', 'eln-form-design');
 const PROMPTS_ROOT = path.join(ROOT, 'bundled', 'eln-prompts');
+const LIMS_PROMPTS_ROOT = path.join(ROOT, 'bundled', 'lims-prompts');
 const OUT_FILE = path.join(ROOT, 'lib', 'eln', 'bundled', 'eln-builtin-files.ts');
 
 /** 内置包版本：增删改参考文档或提示词后递增，触发 Skill 增量升级 */
-const BUNDLE_VERSION = 5;
+const BUNDLE_VERSION = 6;
 
 /** 递归收集目录下所有文件 */
 function walkDir(dir, baseDir, kind, acc) {
@@ -34,6 +35,7 @@ function walkDir(dir, baseDir, kind, acc) {
 const files = [];
 walkDir(SKILL_ROOT, SKILL_ROOT, 'skill', files);
 walkDir(PROMPTS_ROOT, PROMPTS_ROOT, 'prompt', files);
+walkDir(LIMS_PROMPTS_ROOT, LIMS_PROMPTS_ROOT, 'prompt', files);
 
 if (files.length === 0) {
   console.error('[bundle-eln-builtin] 未找到任何源文件');
@@ -47,7 +49,7 @@ const lines = files.map((f) => {
 
 const out = `/**
  * 自动生成：node scripts/bundle-eln-builtin.mjs — 勿手改
- * 源：skills/eln-form-design/**、bundled/eln-prompts/**
+ * 源：skills/eln-form-design/**、bundled/eln-prompts/**、bundled/lims-prompts/**
  */
 
 export const ELN_BUILTIN_BUNDLE_VERSION = ${BUNDLE_VERSION};

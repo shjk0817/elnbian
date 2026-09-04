@@ -169,7 +169,7 @@ export function MemorySection() {
   const { basePath, breakpoint } = useOutletContext<SettingsOutletContext>();
   const params = useParams();
   const navigate = useNavigate();
-  const [settings, setSettings] = useStorageItem(memorySettings, { enabled: false });
+  const [settings, setSettings] = useStorageItem(memorySettings, { enabled: true });
 
   // react-router v6 decodes splat params; fallback to '' means no file selected.
   const splat = params['*'] ?? '';

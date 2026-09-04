@@ -30,6 +30,8 @@ import {
   pendingSidePanelHandoff,
   elnAuthCache,
   elnBuiltinBundleVersion,
+  limsSettings,
+  limsAuthCache,
   mineruSettings,
   type MCPServerConfig,
   type ProviderCredentials,
@@ -358,6 +360,9 @@ export const BACKUP_REGISTRY: BackupEntry<any>[] = [
   entry({ item: elnAuthCache, storageClass: 'exclude' }),
   // 内置 ELN 包版本号（安装时自动写入）。
   entry({ item: elnBuiltinBundleVersion, storageClass: 'exclude' }),
+  entry({ item: limsSettings, storageClass: 'settings' }),
+  // LIMIS 登录态（派生，可重新 sync_auth）。
+  entry({ item: limsAuthCache, storageClass: 'exclude' }),
   entry({
     item: mineruSettings,
     storageClass: 'settings',

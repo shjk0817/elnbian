@@ -42,6 +42,7 @@ export default defineConfig({
       'bookmarks', 'history', 'cookies', 'topSites', 'sessions',
       'downloads', 'notifications',
       'clipboardRead',
+      'declarativeNetRequest',
     ],
     host_permissions: ['<all_urls>'],
     action: {

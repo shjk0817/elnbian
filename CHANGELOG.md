@@ -18,6 +18,68 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.1.7 - 2026-09-05
+
+### 新增 / Added
+
+- 欢迎页三组快捷入口：LIMIS（报告审核、周/月报、事项提醒、查询报告）+ ELN 四卡 + 页面助手四卡
+- 4 条 LIMIS 内置斜杠提示词（`lims-报告审核` 等）
+- LIMIS 内置工具完整实现：`lims__*` 只读/写工具、Referer DNR、业务图解析
+- LIMIS 连接设置页与顶栏连接状态指示
+- 火山方舟多模态模型识别（`ark-code-latest`、`doubao-seed-2.0-code`、`kimi-k2.5`）
+
+### 修复 / Fixed
+
+- LIMIS 业务 API HTTP 500：通过 `declarativeNetRequest` 注入正确 Referer
+- `get_menu` / `list_tasks` / `get_task_detail` / `count_samples_by_order` 等与 239 实测不一致的接口行为
+- MinerU OSS 预签名上传 403（清空 `Content-Type`）
+
+### 变更 / Changed
+
+- 记忆功能默认开启；悬浮球默认限定 ELN/LIMIS 页面
+- MinerU 配置 Token 后：附件最多 20 个、文档 ≤200MB、图片 ≤10MB
+- LIMIS 首页默认路径、切换站点时刷新登录态
+
+### Added
+
+- Welcome screen: LIMIS + ELN + page-assistant sections; four LIMIS slash prompts
+- Full built-in `lims__*` tools with Referer DNR and business graph resolver
+- LIMIS settings and header connection indicator
+- Volcengine Ark multimodal model detection
+
+### Fixed
+
+- LIMIS business API 500s via declarativeNetRequest Referer injection
+- Tool behavior aligned with 10.1.228.239 probes (menu HTML, task info, sample counts)
+- MinerU presigned OSS upload 403
+
+### Changed
+
+- Memory on by default; floating ball scoped to ELN/LIMIS URLs
+- Upload limits scale with MinerU token (20 files / 200MB docs / 10MB images)
+
+## 1.1.0 - 2026-09-04
+
+### 新增 / Added
+
+- 品牌更名为 **建科助手**（扩展名、侧边栏、关于页）
+- LIMIS 内置工具（`lims__*`）：只读查询 + 报告三级签批拆分写工具 + ELN/LIMIS 设置页
+- AI 提供商：**火山方舟 Agent Plan**、**火山方舟 Coding Plan**
+
+### 变更 / Changed
+
+- 移除 Ant Ling、Cerebras、Fireworks、Groq、Hugging Face、Mistral、NVIDIA NIM、Together AI、Vercel AI Gateway
+
+### Added
+
+- Rebrand to **Jianke Assistant** (extension name, side panel, about page)
+- Built-in LIMIS tools (`lims__*`) with split report audit write tools and settings UI
+- Volcengine Ark Agent Plan and Coding Plan providers
+
+### Changed
+
+- Removed Ant Ling, Cerebras, Fireworks, Groq, Hugging Face, Mistral, NVIDIA NIM, Together AI, Vercel AI Gateway
+
 ## 1.0.1 - 2026-08-31
 
 ### 新增 / Added
