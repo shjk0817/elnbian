@@ -11,6 +11,7 @@ import {
 } from '@/lib/lims/constants';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,7 @@ export function LimsSection() {
   const [settings, setSettings] = useStorageItem(limsSettings, {
     preset: 'airport_lab',
     webOrigin: LIMS_AIRPORT_LAB_ORIGIN,
+    allowWriteTools: false,
   });
   const [refreshing, setRefreshing] = useState(false);
 
@@ -48,6 +50,7 @@ export function LimsSection() {
   }, [refresh, settings.webOrigin]);
 
   const syncAuth = async () => {
+    setRefreshing(true);
     try {
       const res = await chrome.runtime.sendMessage({ type: 'lims_sync_auth' }) as
         | { ok?: boolean; error?: string }
@@ -57,6 +60,8 @@ export function LimsSection() {
       if (!String(err).includes('message channel closed')) {
         toast.error(err instanceof Error ? err.message : String(err));
       }
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -66,7 +71,7 @@ export function LimsSection() {
 
   const setPreset = async (preset: LimsSitePreset) => {
     const webOrigin = preset === 'headquarters' ? LIMS_HEADQUARTERS_ORIGIN : LIMS_AIRPORT_LAB_ORIGIN;
-    await setSettings({ preset, webOrigin });
+    await setSettings({ preset, webOrigin, allowWriteTools: settings.allowWriteTools });
     await refresh();
   };
 
@@ -128,10 +133,23 @@ export function LimsSection() {
             <ExternalLink className="size-3.5 mr-1" />
             {connected ? t('settings.lims.openHome') : t('settings.lims.openLogin')}
           </Button>
-          <Button size="sm" onClick={syncAuth}>
+          <Button size="sm" onClick={syncAuth} disabled={refreshing}>
             <RefreshCw className={cn('size-3.5 mr-1', refreshing && 'animate-spin')} />
             {t('settings.lims.sync')}
           </Button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <Label className="text-xs">{t('settings.lims.allowWriteTools')}</Label>
+            <p className="text-xs text-muted-foreground">{t('settings.lims.allowWriteToolsHint')}</p>
+          </div>
+          <Switch
+            checked={settings.allowWriteTools}
+            onCheckedChange={(v) => void setSettings({ ...settings, allowWriteTools: v })}
+          />
         </div>
       </div>
 

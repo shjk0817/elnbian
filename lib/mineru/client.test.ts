@@ -47,3 +47,26 @@ describe('mineru OSS upload', () => {
     expect((putInit?.headers as Record<string, string>)?.['Content-Type']).toBe('');
   });
 });
+
+describe('verifyMineruApiToken', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  });
+
+  it('任务不存在视为 Token 有效', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve({
+      json: async () => ({ code: -1, msg: 'task not found or expire', data: null }),
+    }));
+    const { verifyMineruApiToken } = await import('./client');
+    await expect(verifyMineruApiToken('good-token')).resolves.toBeUndefined();
+  });
+
+  it('A0202 视为 Token 无效', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve({
+      json: async () => ({ code: 'A0202', msg: 'Token 错误', data: null }),
+    }));
+    const { verifyMineruApiToken } = await import('./client');
+    await expect(verifyMineruApiToken('bad')).rejects.toThrow(/Token/);
+  });
+});

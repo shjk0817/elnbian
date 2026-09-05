@@ -12,7 +12,7 @@ import type { Lang } from './i18n';
 //   - English bullets…             （再列全部对应英文）
 // 解析时按「空行」把每个小节的条目分成中文 / 英文半区，按站点语言取用。
 const CHANGELOG_PATH = resolve(process.cwd(), '../CHANGELOG.md');
-const GH = 'https://github.com/maotoumao/Cebian';
+const GH = 'https://github.com/shjk0817/elnbian';
 
 type Kind = 'added' | 'changed' | 'fixed' | 'removed' | 'breaking' | 'other';
 

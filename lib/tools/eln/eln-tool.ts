@@ -6,6 +6,7 @@ import type { TSchema } from 'typebox';
 import type { AgentTool, AgentToolResult } from '@earendil-works/pi-agent-core';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { assertToolAllowed } from '@/lib/eln/guards/safety';
+import { ensureSessionLoaded } from '@/lib/eln/session-state';
 import type { ToolDefinition, ToolResult } from '@/lib/eln/tools/types';
 
 /** MCP 风格结果 → AgentToolResult；错误时 throw 以触发 isError */
@@ -21,7 +22,7 @@ function toAgentResult(result: ToolResult): AgentToolResult<Record<string, unkno
 }
 
 /** 由单个 ToolDefinition 生成 AgentTool */
-export function createElnAgentTool(def: ToolDefinition): AgentTool<TSchema> {
+export function createElnAgentTool(def: ToolDefinition, sessionId?: string): AgentTool<TSchema> {
   const parameters = (zodToJsonSchema as (s: unknown) => Record<string, unknown>)(
     def.inputSchema,
   ) as unknown as TSchema;
@@ -33,6 +34,7 @@ export function createElnAgentTool(def: ToolDefinition): AgentTool<TSchema> {
     parameters,
     async execute(_toolCallId, params, signal): Promise<AgentToolResult<Record<string, unknown>>> {
       signal?.throwIfAborted();
+      if (sessionId) await ensureSessionLoaded(sessionId);
       assertToolAllowed(def.name);
       const validated = def.inputSchema.parse(params ?? {});
       const result = await def.handler(validated as Record<string, unknown>);

@@ -202,3 +202,29 @@ export async function parseFileViaMineru(
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
+
+/** 校验 MinerU API Token（探测 v4 任务查询接口） */
+export async function verifyMineruApiToken(token: string): Promise<void> {
+  const trimmed = token.trim();
+  if (!trimmed) throw new Error('Token 不能为空');
+
+  const probeUrl = `${V4_BASE}/extract/task/__elnbian_token_probe__`;
+  const res = await fetch(probeUrl, {
+    headers: { Accept: '*/*', Authorization: `Bearer ${trimmed}` },
+  });
+  const json = await res.json() as MineruEnvelope<unknown>;
+  if (json.code === 0) return;
+
+  const msg = json.msg ?? '';
+  const code = String(json.code);
+  if (code === 'A0202' || code === 'A0211') {
+    throw new Error(msg || 'Token 无效或已过期');
+  }
+  if (/token/i.test(msg) && /错误|过期|invalid|expired/i.test(msg)) {
+    throw new Error(msg);
+  }
+  // 鉴权通过但探测任务不存在 → Token 有效
+  if (/not found|expire|不存在|过期/i.test(msg)) return;
+
+  throw new Error(msg || `MinerU 验证失败 (${json.code})`);
+}

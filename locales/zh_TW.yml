@@ -166,7 +166,7 @@ settings:
     description: "按對話瀏覽 AI 產生的檔案。瀏覽器是唯讀的，需要匯出時用其中的下載按鈕。"
   about:
     title: "關於"
-    tagline: "建科 ELN 模板編輯 AI 助手"
+    tagline: "建科 ELN / LIMIS 智能側邊欄"
     forkNotice: "基於開源專案 Cebian（AGPL-3.0）二次開發"
     upstream: "上游 Cebian"
     website: "官方網站"
@@ -347,7 +347,7 @@ settings:
       confirmOverwriteDescription: "「$1」將被取代，且已授予的權限將被清除。是否繼續？"
   eln:
     title: "ELN 連線"
-    description: "連線建科 ELN 資料管理平台。在瀏覽器登入 ELN 後，擴充功能會自動讀取登入狀態。"
+    description: "開啟本頁或點擊「同步登入狀態」時，從 ELN 分頁讀取 JWT。"
     server: "伺服器：$1"
     tokenPreview: "Token：$1"
     openLogin: "開啟 ELN 登入頁"
@@ -371,6 +371,13 @@ settings:
       preferMineru: "優先使用 MinerU（跳過本地解析）"
       preferV4: "有 Token 時優先精準 API（最大 200MB）"
       docsLink: "查看 MinerU API 文件"
+      tokenTest: "測試 Token"
+      tokenTesting: "測試中…"
+      tokenTestOk: "MinerU Token 驗證通過"
+      cacheCount: "OCR 快取：$1 條"
+      cacheUnknown: "OCR 快取：無法讀取"
+      clearCache: "清空快取"
+      cacheCleared: "MinerU 快取已清空"
   lims:
     title: "LIMIS 連線"
     description: "連接實驗室資訊管理系統（生產環境）。在瀏覽器登入 LIMIS 後同步 Cookie，即可使用 lims__* 工具。"
@@ -394,6 +401,8 @@ settings:
       step1: "選擇試驗室站點，點擊「開啟 LIMIS 登入頁」並登入"
       step2: "登入成功後點擊「同步登入狀態」"
       step3: "在對話中呼叫 lims__check_auth、lims__get_dashboard_counts 等工具測試"
+    allowWriteTools: "允許寫操作"
+    allowWriteToolsHint: "開啟後 AI 可呼叫簽批、刪委託等寫工具；預設僅唯讀查詢。變更後需新建對話生效。"
   mcp:
     title: "MCP 伺服器"
     description: "連接 Model Context Protocol 伺服器，把它們的工具開放給 agent 使用。"
@@ -905,7 +914,7 @@ dialogs:
   updateNotice:
     title: "發現新版本"
     # $1 = latest version, $2 = current version
-    description: "Cebian v$1 已發佈，目前版本 v$2。"
+    description: "建科助手 v$1 已發佈，目前版本 v$2。"
     updateNow: "立即更新"
     skipVersion: "略過此版本"
 

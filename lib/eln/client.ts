@@ -27,6 +27,8 @@
  *     7.9  高级流程方法（5 个场景）
  */
 
+import { ElnApiError, ElnAuthError, ElnNetworkError, isNetworkError } from './errors';
+
 // ============================================================
 // 第一部分：通用类型
 // ============================================================
@@ -363,14 +365,40 @@ export class ElnApiClient {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(url.toString(), {
-      method: options.method,
-      headers,
-      body: options.body ? JSON.stringify(options.body) : undefined,
-    });
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), {
+        method: options.method,
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
+    } catch (err) {
+      throw new ElnNetworkError('ELN API 网络请求失败', err);
+    }
 
-    const data = await response.json();
-    return data as ApiResponse<T>;
+    let data: ApiResponse<T>;
+    try {
+      data = await response.json() as ApiResponse<T>;
+    } catch {
+      throw new ElnApiError(
+        `ELN API 响应非 JSON (HTTP ${response.status})`,
+        response.status,
+      );
+    }
+
+    if (!response.ok) {
+      throw new ElnApiError(
+        data.errorMessage || `ELN API HTTP ${response.status}`,
+        response.status,
+        data.errorCode,
+      );
+    }
+
+    if (!data.success && response.status === 401) {
+      throw new ElnAuthError(data.errorMessage || 'ELN 认证失败');
+    }
+
+    return data;
   }
 
   // ----------------------------------------------------------
@@ -403,8 +431,14 @@ export class ElnApiClient {
     try {
       await this.ensureToken();
       const res = await this.listCategories();
-      return res.success;
-    } catch {
+      if (res.success) return true;
+      if (res.errorCode === 401 || res.errorMessage?.includes('401')) {
+        throw new ElnAuthError(res.errorMessage || 'ELN token 无效');
+      }
+      return false;
+    } catch (err) {
+      if (err instanceof ElnAuthError) throw err;
+      if (isNetworkError(err)) throw err;
       return false;
     }
   }

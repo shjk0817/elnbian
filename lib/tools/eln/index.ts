@@ -13,6 +13,6 @@ export function createSessionElnTools(sessionId: string): AgentTool<any>[] {
   return [
     elnCheckAuthTool,
     elnSyncAuthTool,
-    ...defs.map(createElnAgentTool),
+    ...defs.map((def) => createElnAgentTool(def, sessionId)),
   ];
 }

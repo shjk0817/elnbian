@@ -1,6 +1,8 @@
 /**
- * LIMIS 开发期写工具拦截
+ * LIMIS 写工具拦截与安全守卫
  */
+
+import { limsSettings } from '@/lib/persistence/storage';
 
 /** 发版后开放的写工具（开发期禁止） */
 export const WRITE_TOOL_NAMES = new Set<string>([
@@ -21,10 +23,17 @@ export const WRITE_TOOL_NAMES = new Set<string>([
   'report_back_task_delete',
 ]);
 
-/** 开发构建拦截写工具 */
-export function assertToolAllowed(toolName: string): void {
-  if (import.meta.env.DEV && WRITE_TOOL_NAMES.has(toolName)) {
+/** 执行前校验：开发模式与设置开关 */
+export async function assertToolAllowed(toolName: string): Promise<void> {
+  if (!WRITE_TOOL_NAMES.has(toolName)) return;
+  if (import.meta.env.DEV) {
     throw new Error(`工具 ${toolName} 在开发模式下不可用（LIMIS 只读联调）`);
+  }
+  const settings = await limsSettings.getValue();
+  if (!settings.allowWriteTools) {
+    throw new Error(
+      `工具 ${toolName} 已禁用。请在设置 → LIMIS 连接 开启「允许写操作」后新建对话。`,
+    );
   }
 }
 

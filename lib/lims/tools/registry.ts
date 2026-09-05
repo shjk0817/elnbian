@@ -7,13 +7,19 @@ import { createLimsCatalogTools } from './definitions/catalog-tools';
 import { createLimsCoreTools } from './definitions/core-tools';
 import { createLimsReportAuditTools } from './definitions/report-audit-tools';
 import { createLimsWriteTools } from './definitions/write-tools';
+import { isWriteTool } from '@/lib/lims/guards/safety';
 
-/** 返回全部 LIMIS 业务工具（含写工具；开发构建由 assertToolAllowed 拦截） */
-export function collectLimsToolDefinitions(sessionId: string): ToolDefinition[] {
-  return [
+/** 返回 LIMIS 业务工具；默认过滤写工具，需设置 allowWriteTools 才包含 */
+export function collectLimsToolDefinitions(
+  sessionId: string,
+  includeWriteTools = false,
+): ToolDefinition[] {
+  const all: ToolDefinition[] = [
     ...createLimsCoreTools(sessionId),
     ...createLimsCatalogTools(sessionId),
     ...createLimsWriteTools(sessionId),
     ...createLimsReportAuditTools(sessionId),
   ];
+  if (includeWriteTools) return all;
+  return all.filter((t) => !isWriteTool(t.name));
 }

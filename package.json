@@ -2,7 +2,7 @@
   "name": "elnbian",
   "description": "建科助手 — ELN / LIMIS 智能侧边栏扩展",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "license": "AGPL-3.0-only",
   "type": "module",
   "packageManager": "pnpm@10.22.0",

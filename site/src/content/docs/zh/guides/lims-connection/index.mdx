@@ -1,0 +1,29 @@
+---
+title: LIMIS 连接
+description: 同步 LIMIS Cookie 并使用 lims__ 查询与签批工具。
+group: guides
+order: 11
+---
+
+建科助手内置 **35 个 `lims__*` 工具**，用于委托/报告查询、综合查询与报告三级签批。
+
+## 前置条件
+
+1. **设置 → LIMIS 连接** 选择站点（机场工地 239 / 莘庄总部 22）
+2. 在浏览器打开对应 LIMIS 并登录
+3. 点击「同步登录态」
+
+## 写操作开关
+
+默认仅向 AI 暴露**只读查询**工具。若需签批、删委托等写操作，在 **设置 → LIMIS 连接** 开启「允许写操作」，并**新建对话**后生效。
+
+## 常用工具
+
+| 场景 | 工具 |
+| --- | --- |
+| 同步登录 | `lims__sync_auth` / `lims__check_auth` |
+| 待办统计 | `lims__get_dashboard_counts` |
+| 报告查询 | `lims__list_reports` / `lims__get_report_detail` |
+| 报告签批 | `lims__report_review_agree` 等（需开启写操作） |
+
+完整列表见仓库 [docs/TOOLS.md](https://github.com/shjk0817/elnbian/blob/master/docs/TOOLS.md)。

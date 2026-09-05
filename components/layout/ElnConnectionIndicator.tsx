@@ -2,6 +2,7 @@
  * 侧边栏 ELN 连接状态指示器
  */
 
+import { useEffect } from 'react';
 import { FlaskConical } from 'lucide-react';
 import { useStorageItem } from '@/hooks/useStorageItem';
 import { elnAuthCache } from '@/lib/persistence/storage';
@@ -25,6 +26,10 @@ export function ElnConnectionIndicator({ onOpenElnSettings }: ElnConnectionIndic
     tokenPreview: null,
     cachedToken: null,
   });
+
+  useEffect(() => {
+    void chrome.runtime.sendMessage({ type: 'eln_refresh_status' });
+  }, []);
 
   const dotClass = auth.status === 'connected'
     ? 'bg-green-500'

@@ -1,0 +1,35 @@
+---
+title: ELN 连接
+description: 同步建科 ELN 登录态并使用 eln__ 模板编辑工具。
+group: guides
+order: 10
+---
+
+建科助手内置 **66 个 `eln__*` 工具**，用于在 ELN 模板编辑页搭建 Formily Schema、公式、表格与受控编号。
+
+## 前置条件
+
+- 已在浏览器打开建科 ELN（默认 `http://10.1.228.52`）并完成登录
+- 扩展 **设置 → ELN 连接** 中点击「同步登录态」
+
+扩展会从 ELN 标签页的 `localStorage` 读取 JWT，不会保存你的 ELN 密码。
+
+## 常用工具
+
+| 场景 | 工具 |
+| --- | --- |
+| 同步登录 | `eln__sync_auth` / `eln__check_auth` |
+| 查分类样品 | `eln__list_categories` / `eln__list_samples` |
+| 新建模板 | `eln__create_template` → `eln__select_template` |
+| 改 Schema | `eln__set_property` / `eln__set_full_schema` |
+| 保存 | `eln__save_template` |
+
+完整列表见仓库 [docs/TOOLS.md](https://github.com/shjk0817/elnbian/blob/master/docs/TOOLS.md)。
+
+## MinerU 文档解析
+
+在 **设置 → ELN 连接 → 文档解析（MinerU）** 配置 Token，可解析复杂 PDF/扫描件；支持本地 OCR 缓存与 Token 连通性测试。
+
+## 安全策略
+
+启用模板、提交表单等 8 个危险操作已从工具列表中移除，AI 无法调用。

@@ -7,15 +7,22 @@ import { WRITE_TOOL_NAMES } from '@/lib/lims/guards/safety';
 import { collectLimsToolDefinitions } from './registry';
 
 describe('lims tools registry', () => {
-  it('共 33 个业务工具（18 只读 + 15 写）', () => {
+  it('默认只读 18 个业务工具', () => {
     const defs = collectLimsToolDefinitions('test');
-    expect(defs).toHaveLength(33);
+    expect(defs).toHaveLength(18);
     const names = defs.map((d) => d.name);
     expect(names).toContain('resolve_business_graph');
     expect(names).toContain('list_reports');
+    for (const w of WRITE_TOOL_NAMES) {
+      expect(names).not.toContain(w);
+    }
+  });
+
+  it('开启写工具时共 33 个', () => {
+    const defs = collectLimsToolDefinitions('test', true);
+    expect(defs).toHaveLength(33);
+    const names = defs.map((d) => d.name);
     expect(names).toContain('report_review_agree');
-    expect(names).not.toContain('audit_report');
-    expect(names).not.toContain('approve_order_delay');
     for (const w of WRITE_TOOL_NAMES) {
       expect(names).toContain(w);
     }

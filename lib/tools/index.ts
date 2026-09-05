@@ -84,7 +84,7 @@ export async function buildSessionToolArray(
 ): Promise<AgentTool<any>[]> {
   const mcpTools = await discoverMCPTools();
   const elnTools = createSessionElnTools(ctx.sessionId);
-  const limsTools = createSessionLimsTools(ctx.sessionId);
+  const limsTools = await createSessionLimsTools(ctx.sessionId);
   const runSkill = createSessionRunSkillTool(ctx.sessionId);
   return [...ctx.getInteractiveTools(), ...sharedTools, runSkill, ...elnTools, ...limsTools, ...mcpTools];
 }

@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import { useStorageItem } from '@/hooks/useStorageItem';
 import { elnAuthCache, mineruSettings } from '@/lib/persistence/storage';
 import { ELN_WEB_ORIGIN } from '@/lib/eln/constants';
+import { verifyMineruApiToken } from '@/lib/mineru/client';
+import { clearMineruParseCache, getMineruCacheStats } from '@/lib/mineru/cache';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -31,6 +33,18 @@ export function ElnSection() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [tokenDraft, setTokenDraft] = useState(mineru.apiToken);
+  const [testingToken, setTestingToken] = useState(false);
+  const [cacheCount, setCacheCount] = useState<number | null>(null);
+  const [clearingCache, setClearingCache] = useState(false);
+
+  const refreshCacheStats = useCallback(async () => {
+    try {
+      const stats = await getMineruCacheStats();
+      setCacheCount(stats.count);
+    } catch {
+      setCacheCount(null);
+    }
+  }, []);
 
   useEffect(() => {
     setTokenDraft(mineru.apiToken);
@@ -50,7 +64,33 @@ export function ElnSection() {
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+    void refreshCacheStats();
+  }, [refresh, refreshCacheStats]);
+
+  const testToken = async () => {
+    setTestingToken(true);
+    try {
+      await verifyMineruApiToken(tokenDraft);
+      toast.success(t('settings.eln.mineru.tokenTestOk'));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setTestingToken(false);
+    }
+  };
+
+  const clearCache = async () => {
+    setClearingCache(true);
+    try {
+      await clearMineruParseCache();
+      await refreshCacheStats();
+      toast.success(t('settings.eln.mineru.cacheCleared'));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setClearingCache(false);
+    }
+  };
 
   const openLogin = () => {
     void chrome.runtime.sendMessage({ type: 'eln_open_login' });
@@ -123,7 +163,20 @@ export function ElnSection() {
             <Button variant="outline" size="sm" onClick={saveToken}>
               {t('common.save')}
             </Button>
+            <Button variant="outline" size="sm" onClick={() => void testToken()} disabled={testingToken}>
+              {testingToken ? t('settings.eln.mineru.tokenTesting') : t('settings.eln.mineru.tokenTest')}
+            </Button>
           </div>
+        </div>
+        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>
+            {cacheCount == null
+              ? t('settings.eln.mineru.cacheUnknown')
+              : t('settings.eln.mineru.cacheCount', [String(cacheCount)])}
+          </span>
+          <Button variant="outline" size="sm" onClick={() => void clearCache()} disabled={clearingCache}>
+            {t('settings.eln.mineru.clearCache')}
+          </Button>
         </div>
         <MineruSwitch
           label={t('settings.eln.mineru.fallback')}

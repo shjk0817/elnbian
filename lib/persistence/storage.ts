@@ -145,6 +145,8 @@ export interface LimsSettings {
   webOrigin: string;
   /** airport_lab=239 机场工地试验室；headquarters=22 莘庄总部 */
   preset: 'airport_lab' | 'headquarters' | 'custom' | 'development' | 'production';
+  /** 是否向 AI 暴露签批/删委托等写工具（默认只读） */
+  allowWriteTools: boolean;
 }
 
 export const limsSettings = storage.defineItem<LimsSettings>(
@@ -153,6 +155,7 @@ export const limsSettings = storage.defineItem<LimsSettings>(
     fallback: {
       preset: 'airport_lab',
       webOrigin: 'http://10.1.228.239',
+      allowWriteTools: false,
     },
   },
 );

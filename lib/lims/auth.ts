@@ -16,6 +16,7 @@ import {
   readLimsCookiesFromBrowser,
   readLimsCookiesFromTabDocument,
 } from './read-cookies';
+import { classifyLimsAuthError } from './auth-errors';
 
 export type LimsAuthStatus = 'unknown' | 'connected' | 'no_cookies' | 'invalid';
 
@@ -125,8 +126,6 @@ export async function refreshLimsAuthState(): Promise<LimsAuthStatus> {
     return 'connected';
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes('未检测到')) return 'no_cookies';
-    if (msg.includes('失效')) return 'invalid';
-    return 'unknown';
+    return classifyLimsAuthError(msg);
   }
 }

@@ -18,6 +18,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## 1.2.1 - 2026-09-05
+
+### 修复 / Fixed
+
+- LIMIS 连接状态：`no_cookies` 误显示为 `unknown`（错误文案映射）
+- ELN 认证：内网不可达时不再误判为 token 失效
+- ELN 编辑会话：写入 `chrome.storage.session`，Service Worker 重启后可恢复
+- ELN API 客户端：统一 HTTP / JSON / 401 错误处理
+- MinerU Token 测试：`task not found` 等探测响应视为有效
+- 火山方舟 API Key 校验：API 往返成功即可，不再要求非空 text 回复
+
+### 新增 / Added
+
+- LIMIS 写工具默认只读；设置页「允许写操作」开关（默认关，新建对话生效）
+- MinerU：测试 Token、OCR 缓存条数与清空
+- 更新检查：latest 为 prerelease 时 fallback 至最新 stable
+- 站点文档：安装/Provider 对齐 elnbian；ELN / LIMIS 连接专题页
+
+### 改进 / Changed
+
+- 品牌文案统一为「建科助手」（更新弹窗、About tagline、ELN 设置描述）
+- ELN 连接指示器挂载时自动刷新；LIMIS 同步按钮 loading / 错误提示
+
+### Fixed
+
+- LIMIS auth status mapping; ELN network vs invalid token; session persistence; client error handling
+- MinerU / Volcengine Ark API key verification false negatives
+
+### Added
+
+- LIMIS write-tool guard with settings toggle; MinerU cache UI; site docs for elnbian fork
+
+### Changed
+
+- Branding i18n; ELN indicator auto-refresh; update check prerelease fallback
+
 ## 1.2.0 - 2026-09-05
 
 ### 文档 / Documentation

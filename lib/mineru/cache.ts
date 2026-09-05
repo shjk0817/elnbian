@@ -61,3 +61,14 @@ export async function writeMineruParseCache(input: {
   const oldest = await getMineruCacheDb().parses.orderBy('createdAt').limit(overflow).toArray();
   await getMineruCacheDb().parses.bulkDelete(oldest.map((r) => r.cacheKey));
 }
+
+/** 读取缓存条目数 */
+export async function getMineruCacheStats(): Promise<{ count: number }> {
+  const count = await getMineruCacheDb().parses.count();
+  return { count };
+}
+
+/** 清空全部 MinerU 解析缓存 */
+export async function clearMineruParseCache(): Promise<void> {
+  await getMineruCacheDb().parses.clear();
+}

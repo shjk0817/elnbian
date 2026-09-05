@@ -170,7 +170,7 @@ settings:
     description: "Browse files the AI created, organized by conversation. The browser is read-only — use the download button there to export."
   about:
     title: "About"
-    tagline: "Jianke ELN template design AI assistant"
+    tagline: "Jianke Assistant — ELN / LIMIS smart side panel"
     forkNotice: "Forked from Cebian (AGPL-3.0)"
     upstream: "Upstream Cebian"
     website: "Website"
@@ -351,7 +351,7 @@ settings:
       confirmOverwriteDescription: "\"$1\" will be replaced and its saved permissions will be cleared. Continue?"
   eln:
     title: "ELN Connection"
-    description: "Connect to the Jianke ELN platform. Log in to ELN in your browser, then sync your session here."
+    description: "Reads JWT from an ELN tab when you open this page or click Sync login."
     server: "Server: $1"
     tokenPreview: "Token: $1"
     openLogin: "Open ELN login"
@@ -375,6 +375,13 @@ settings:
       preferMineru: "Prefer MinerU (skip local parsing)"
       preferV4: "Prefer v4 API when token is set (up to 200MB)"
       docsLink: "MinerU API docs"
+      tokenTest: "Test token"
+      tokenTesting: "Testing…"
+      tokenTestOk: "MinerU token verified"
+      cacheCount: "OCR cache: $1 entries"
+      cacheUnknown: "OCR cache: unavailable"
+      clearCache: "Clear cache"
+      cacheCleared: "MinerU cache cleared"
   lims:
     title: "LIMIS Connection"
     description: "Connect to the lab information system (production). Sign in in your browser, then sync cookies to use lims__* tools."
@@ -398,6 +405,8 @@ settings:
       step1: "Choose a lab site, open LIMIS login and sign in"
       step2: "After signing in, click \"Sync login\""
       step3: "Try lims__check_auth, lims__get_dashboard_counts in chat"
+    allowWriteTools: "Allow write tools"
+    allowWriteToolsHint: "When enabled, the AI can call sign-off and delete tools. Default is read-only. Start a new chat after changing."
   mcp:
     title: "MCP Servers"
     description: "Connect Model Context Protocol servers to expose their tools to the agent."
@@ -918,7 +927,7 @@ dialogs:
   updateNotice:
     title: "New version available"
     # $1 = latest version, $2 = current version
-    description: "Cebian v$1 is out. You're on v$2."
+    description: "Jianke Assistant v$1 is out. You're on v$2."
     updateNow: "Update now"
     skipVersion: "Skip this version"
 

@@ -14,6 +14,7 @@ import { registerClientHandlers, type ClientHandlerMap } from '../ipc/client-rou
 import { onPortDisconnect, post, broadcastAll } from '../ipc/port-registry';
 import { vfs } from '@/lib/persistence/vfs';
 import { isValidSessionId } from '@/lib/utils';
+import { clearSession as clearElnSession } from '@/lib/eln/session-state';
 
 // ─── Grace cancel ───
 
@@ -293,6 +294,7 @@ const chatClientHandlers: ClientHandlerMap = {
           console.warn(`[session_delete] failed to remove workspace ${workspacePath}:`, err);
         }
         await sessionStore.delete(sessionId);
+        clearElnSession(sessionId);
         deleted.push(sessionId);
         // 库里已经删掉了 = 这条就算删成功。内存态清理单独隔离，免得它出错把一次
         // 真实的删除误报成失败（下面会据 deleted / failed 分别广播与回报）。

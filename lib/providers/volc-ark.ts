@@ -68,7 +68,7 @@ export function getVolcArkModels(provider: string): Model<Api>[] {
   return SHARED_MODEL_IDS.map((id) => buildModel(provider, baseUrl, id));
 }
 
-/** 校验火山方舟 API Key（任意非空回复即视为连通） */
+/** 校验火山方舟 API Key（chat/completions 往返成功即视为有效） */
 export async function verifyVolcArkApiKey(provider: string, apiKey: string): Promise<void> {
   const models = getVolcArkModels(provider);
   const model = models.find((m) => m.id === 'deepseek-v3.2') ?? models[0];
@@ -80,13 +80,5 @@ export async function verifyVolcArkApiKey(provider: string, apiKey: string): Pro
     { apiKey: apiKey.trim(), maxTokens: 16 },
   );
   if (result instanceof Error) throw result;
-
-  const text = result.content
-    .filter((b) => b.type === 'text')
-    .map((b) => ('text' in b ? b.text : ''))
-    .join('')
-    .trim();
-  if (!text) {
-    throw new Error('API 返回空响应，请检查 Key 是否有效、套餐是否开通');
-  }
+  // Coding Plan 等场景可能返回空 text 或非 text 块；HTTP 200 即说明 Key/套餐可用
 }

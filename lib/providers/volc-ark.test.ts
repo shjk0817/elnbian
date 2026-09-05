@@ -1,10 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { getVolcArkModels, VOLC_ARK_CODING_PROVIDER } from './volc-ark';
 
+const completeMock = vi.fn();
+
 vi.mock('@earendil-works/pi-ai/compat', () => ({
-  complete: vi.fn(async () => ({
-    content: [{ type: 'text', text: '你好' }],
-  })),
+  complete: (...args: unknown[]) => completeMock(...args),
 }));
 
 describe('getVolcArkModels', () => {
@@ -24,8 +24,19 @@ describe('getVolcArkModels', () => {
 });
 
 describe('verifyVolcArkApiKey', () => {
-  it('非空回复即通过', async () => {
+  beforeEach(() => {
+    completeMock.mockReset();
+  });
+
+  it('非 Error 即通过（含空 content）', async () => {
+    completeMock.mockResolvedValueOnce({ content: [] });
     const { verifyVolcArkApiKey } = await import('./volc-ark');
     await expect(verifyVolcArkApiKey(VOLC_ARK_CODING_PROVIDER, 'test-key')).resolves.toBeUndefined();
+  });
+
+  it('complete 返回 Error 则失败', async () => {
+    completeMock.mockResolvedValueOnce(new Error('401 Unauthorized'));
+    const { verifyVolcArkApiKey } = await import('./volc-ark');
+    await expect(verifyVolcArkApiKey(VOLC_ARK_CODING_PROVIDER, 'bad-key')).rejects.toThrow(/401/);
   });
 });

@@ -1,50 +1,33 @@
 ---
 title: Installation
-description: Install Cebian in your browser via an extension store or GitHub Release.
+description: Install Jianke Assistant (elnbian) from GitHub Releases.
 group: getting-started
 order: 1
 ---
 
-You can install Cebian in any of the ways below. For everyday use, installing from an extension store is recommended; if you want the latest version right away, you can download it from GitHub Release.
+**Jianke Assistant** (elnbian) is a fork for Jianke intranet ELN / LIMIS. Install from **this repo's Releases**, not the upstream Cebian store build.
 
-## Install from an extension store
+## Recommended: GitHub Release
 
-Firefox, Chrome, Edge, and most Chromium-based browsers can install from their extension stores:
+[Jianke Assistant Releases](https://github.com/shjk0817/elnbian/releases)
+
+1. Download **`elnbian-x.x.x-chrome.zip`**
+2. Extract to a fixed folder
+3. Open `chrome://extensions` (or Edge extensions)
+4. Enable Developer mode
+5. Load unpacked → select the extracted folder
+6. To update: replace files and click Reload on the extensions page
+
+> Tool catalog: [docs/TOOLS.md](https://github.com/shjk0817/elnbian/blob/master/docs/TOOLS.md)
+
+## Upstream Cebian stores (not this fork)
+
+These install **upstream Cebian** without ELN / LIMIS tools:
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/dnfmklmdbipiahdjiogaoemjaiodomdf)
 - [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/kakfgcmbiacmclkjboijakkhlhioopcd)
 - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/cebian-ai-side-panel-agent/)
 
-Open the corresponding page and click the install button. Once installed, the Cebian icon will appear in your browser toolbar; click it to open the sidebar.
+## After install
 
-> Store versions go through review, so they may update a little later than GitHub Release.
-
-## Install from GitHub Release
-
-Updates are also published to GitHub at the same time. You can download the latest version from Releases:
-
-[Cebian GitHub Releases](https://github.com/maotoumao/Cebian/releases)
-
-The installation steps are:
-
-1. Download `cebian-{version}-chrome.zip`
-2. Unzip it into a fixed directory
-3. Open your browser's extension management page
-4. Enable "Developer mode"
-5. Click "Load unpacked"
-6. Select the directory you just unzipped
-
-> The Release also includes a Firefox package. For manual installation, download the corresponding `firefox.zip`; for everyday use, Firefox Add-ons is recommended.
-
-## Choosing an installation method
-
-- Everyday use: the extension store is the easiest
-    - Edge users: prefer the Edge Add-ons store
-    - Chrome / Chromium users: prefer the Chrome Web Store
-    - Firefox users: prefer Firefox Add-ons
-
-- Want the latest version: GitHub Release is usually fastest
-
-## After installation
-
-Once installed, click the Cebian icon in your browser toolbar to open the sidebar. The first time you use it, you need to configure an AI provider, and then you can start chatting.
+Configure **Settings → AI Providers**, then **ELN / LIMIS** connection pages to sync intranet login state.

@@ -28,7 +28,7 @@ export function createLimsAgentTool(def: ToolDefinition): AgentTool<TSchema> {
     parameters,
     async execute(_id, params, signal): Promise<AgentToolResult<Record<string, unknown>>> {
       signal?.throwIfAborted();
-      assertToolAllowed(def.name);
+      await assertToolAllowed(def.name);
       const validated = def.inputSchema.parse(params ?? {});
       const result = await def.handler(validated as Record<string, unknown>);
       return toAgentResult(result);

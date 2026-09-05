@@ -1,14 +1,46 @@
 /**
- * useUpdateCheck — 从 GitHub 拉取建科 ELN 助手最新 Release 并与当前扩展版本比对。
+ * useUpdateCheck — 从 GitHub 拉取建科助手最新 Release 并与当前扩展版本比对。
  *
  * 结果缓存 6 小时；调用 `recheck()` 可强制刷新。
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ELNBIAN_GITHUB_RELEASES_LATEST_API } from '@/lib/eln/constants';
+import { ELNBIAN_GITHUB_RELEASES_LATEST_API, ELNBIAN_GITHUB_REPO } from '@/lib/eln/constants';
 
 const CACHE_KEY = 'elnbian:updateCheck';
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 const RELEASES_URL = ELNBIAN_GITHUB_RELEASES_LATEST_API;
+const RELEASES_LIST_URL = `https://api.github.com/repos/${ELNBIAN_GITHUB_REPO}/releases?per_page=10`;
+
+/** 解析 GitHub Release 标签为版本号 */
+function parseReleaseTag(data: { tag_name?: string; prerelease?: boolean }): string | null {
+  if (data.prerelease) return null;
+  const latest = data.tag_name ? stripV(data.tag_name) : '';
+  return latest || null;
+}
+
+/** 拉取最新 stable Release 版本号 */
+async function fetchLatestStableVersion(signal: AbortSignal): Promise<string> {
+  const res = await fetch(RELEASES_URL, {
+    headers: { Accept: 'application/vnd.github+json' },
+    signal,
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = (await res.json()) as { tag_name?: string; prerelease?: boolean };
+  const latest = parseReleaseTag(data);
+  if (latest) return latest;
+
+  const listRes = await fetch(RELEASES_LIST_URL, {
+    headers: { Accept: 'application/vnd.github+json' },
+    signal,
+  });
+  if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`);
+  const list = (await listRes.json()) as Array<{ tag_name?: string; prerelease?: boolean }>;
+  for (const item of list) {
+    const v = parseReleaseTag(item);
+    if (v) return v;
+  }
+  throw new Error('no stable release found');
+}
 
 export type UpdateStatus =
   | { kind: 'idle' }
@@ -103,15 +135,7 @@ export function useUpdateCheck() {
       abortRef.current = controller;
       if (mountedRef.current) setStatus({ kind: 'checking' });
       try {
-        const res = await fetch(RELEASES_URL, {
-          headers: { Accept: 'application/vnd.github+json' },
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = (await res.json()) as { tag_name?: string; prerelease?: boolean };
-        if (data.prerelease) throw new Error('latest release is a prerelease');
-        const latest = data.tag_name ? stripV(data.tag_name) : '';
-        if (!latest) throw new Error('missing tag_name');
+        const latest = await fetchLatestStableVersion(controller.signal);
         writeCache({ checkedAt: Date.now(), latest });
         if (mountedRef.current) setStatus(buildStatus(current, latest));
       } catch (err) {

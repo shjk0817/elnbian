@@ -5,6 +5,7 @@
 import { elnAuthCache } from '@/lib/persistence/storage';
 import { ELN_API_BASE_URL, ELN_LOGIN_URL, ELN_TOKEN_KEY, ELN_WEB_ORIGIN } from './constants';
 import { ElnApiClient } from './client';
+import { ElnAuthError, isNetworkError } from './errors';
 import { findTabsForOrigin } from '@/lib/shared/match-origin-tabs';
 
 export type ElnAuthStatus = 'unknown' | 'connected' | 'no_token' | 'invalid';
@@ -46,11 +47,17 @@ async function persistAuthStatus(status: ElnAuthStatus, token: string | null): P
   });
 }
 
-/** 用 API 校验 token 是否仍有效 */
+/** 用 API 校验 token 是否仍有效；网络故障抛错，认证失败返回 false */
 async function validateToken(token: string): Promise<boolean> {
   const client = new ElnApiClient(ELN_API_BASE_URL);
   client.setToken(token);
-  return client.checkAuth();
+  try {
+    return await client.checkAuth();
+  } catch (err) {
+    if (isNetworkError(err)) throw err;
+    if (err instanceof ElnAuthError) return false;
+    throw err;
+  }
 }
 
 /** 从缓存、ELN 标签页依次获取 token；找不到则抛错 */
@@ -58,10 +65,17 @@ export async function resolveElnToken(forceRescan = false): Promise<string> {
   if (!forceRescan) {
     const cached = await elnAuthCache.getValue();
     if (cached.cachedToken) {
-      const valid = await validateToken(cached.cachedToken);
-      if (valid) {
-        await persistAuthStatus('connected', cached.cachedToken);
-        return cached.cachedToken;
+      try {
+        const valid = await validateToken(cached.cachedToken);
+        if (valid) {
+          await persistAuthStatus('connected', cached.cachedToken);
+          return cached.cachedToken;
+        }
+      } catch (err) {
+        if (isNetworkError(err)) {
+          await persistAuthStatus('unknown', cached.cachedToken);
+          throw new Error('无法连接 ELN API，请检查内网后重试。');
+        }
       }
     }
   }
@@ -74,7 +88,16 @@ export async function resolveElnToken(forceRescan = false): Promise<string> {
     );
   }
 
-  const valid = await validateToken(fromTab);
+  let valid: boolean;
+  try {
+    valid = await validateToken(fromTab);
+  } catch (err) {
+    if (isNetworkError(err)) {
+      await persistAuthStatus('unknown', fromTab);
+      throw new Error('无法连接 ELN API，请检查内网后重试。');
+    }
+    throw err;
+  }
   if (!valid) {
     await elnAuthCache.setValue({
       status: 'invalid',

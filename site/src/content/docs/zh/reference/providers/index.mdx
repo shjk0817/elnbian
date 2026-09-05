@@ -1,17 +1,15 @@
 ---
 title: Provider 列表
-description: Cebian 支持的模型提供商一览。
+description: 建科助手支持的 AI 模型提供商一览。
 group: reference
 order: 1
 ---
 
-Cebian 本身不提供模型额度。你需要在「设置 → AI 提供商」里接入自己已有的订阅或 API Key，然后在对话输入框里选择模型。
+建科助手本身不提供模型额度。你需要在「设置 → AI 提供商」里接入自己已有的订阅或 API Key，然后在对话输入框里选择模型。
 
-下面只是当前内置 Provider 的列表。实际可用模型会随各家服务变化，以设置页里能选到的模型为准。
+下面列表与扩展内置 `registry.ts` 一致。实际可用模型以设置页为准。
 
 ## OAuth
-
-这类 Provider 不需要手动填写 API Key，按页面提示登录即可。
 
 | Provider | 说明 |
 | --- | --- |
@@ -20,31 +18,23 @@ Cebian 本身不提供模型额度。你需要在「设置 → AI 提供商」�
 
 ## API Key
 
-这类 Provider 需要填写对应平台的 API Key。保存时 Cebian 会做一次简单连通性测试；如果测试没通过，也会先保存，只是会显示「未验证」。
+| Provider | 说明 |
+| --- | --- |
+| Anthropic | Claude 系列 |
+| DeepSeek | DeepSeek API |
+| Google Gemini | Gemini 系列 |
+| Kimi Coding Plan | Moonshot 编程计划 |
+| MiniMax / MiniMax (CN) | MiniMax 开放平台 |
+| Moonshot / Moonshot (CN) | Kimi 开放平台 |
+| OpenAI | GPT 系列 |
+| OpenRouter | 多模型聚合 |
+| **火山方舟 Agent Plan** | 字节跳动方舟 Agent 编程 |
+| **火山方舟 Coding Plan** | 字节跳动方舟 Coding 编程 |
+| xAI | Grok |
+| Xiaomi MiMo / MiMo Plan (CN) | 小米 MiMo |
+| zAI | zAI 平台 |
 
-- Ant Ling
-- Anthropic
-- Cerebras
-- DeepSeek
-- Fireworks
-- Google Gemini
-- Groq
-- Hugging Face
-- Kimi Coding Plan
-- MiniMax
-- MiniMax (CN)
-- Mistral
-- Moonshot
-- Moonshot (CN)
-- NVIDIA NIM
-- OpenAI
-- OpenRouter
-- Together AI
-- Vercel AI Gateway
-- xAI
-- Xiaomi MiMo
-- Xiaomi MiMo Plan (CN)
-- zAI
+保存 API Key 时会做连通性测试；火山方舟不要求模型回复固定字符串。
 
 ## OpenAI Compatible
 
